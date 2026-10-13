@@ -344,7 +344,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 1. HERO SECTION (2-COLUMN GRID - MATCHING REFERENCE DESIGN)              */}
       {/* ========================================================================= */}
-      <section className="relative z-10 bg-[#FAFAFC] text-slate-900 border-b border-slate-200 pt-10 pb-12 sm:pt-14 sm:pb-16 lg:pt-16 lg:pb-20 overflow-hidden">
+      <section className="relative z-10 bg-[#FAFAFC] text-slate-900 border-b border-slate-200 py-[35px] sm:pt-14 sm:pb-16 lg:pt-16 lg:pb-20 overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
@@ -501,7 +501,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 2. WHY CHOOSE US / BOOST TRAFFIC SECTION (WHITE BACKGROUND, BLACK TEXT)   */}
       {/* ========================================================================= */}
-      <section id="discover" className="relative z-10 bg-white text-slate-900 py-20 lg:py-28 border-b border-slate-200 overflow-hidden">
+      <section id="discover" className="relative z-10 bg-white text-slate-900 py-[35px] sm:py-20 lg:py-28 border-b border-slate-200 overflow-hidden">
         
         {/* Subtle World Map Silhouette Watermark in Background */}
         <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-full lg:w-1/2 h-full opacity-40 select-none flex items-center justify-center">
@@ -607,7 +607,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 3. FEATURED AI KITS & TIERS (#kits)                                       */}
       {/* ========================================================================= */}
-      <section id="kits" className="relative z-10 py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
+      <section id="kits" className="relative z-10 py-[35px] sm:py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -673,7 +673,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 4. AI AGENTS DIRECTORY & INTERACTIVE SHOWCASE (#agents)                  */}
       {/* ========================================================================= */}
-      <section id="agents" className="relative z-10 py-24 bg-white border-t border-slate-200 text-slate-900">
+      <section id="agents" className="relative z-10 py-[35px] sm:py-24 bg-white border-t border-slate-200 text-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -779,7 +779,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 5. AUTOMATION & VOICE AI CAPABILITIES (#automate & #voice)                */}
       {/* ========================================================================= */}
-      <section id="automate" className="relative z-10 py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
+      <section id="automate" className="relative z-10 py-[35px] sm:py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -870,7 +870,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 6. CURATED AI GUIDES & E-BOOKS CATALOG (#resources)                       */}
       {/* ========================================================================= */}
-      <section id="resources" className="relative z-10 py-24 bg-white border-t border-slate-200 text-slate-900">
+      <section id="resources" className="relative z-10 py-[35px] sm:py-24 bg-white border-t border-slate-200 text-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
@@ -960,7 +960,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 7. PHILOSOPHY & WHY US                                                   */}
       {/* ========================================================================= */}
-      <section className="relative z-10 py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
+      <section className="relative z-10 py-[35px] sm:py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -1022,7 +1022,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 8. FREQUENTLY ASKED QUESTIONS (Accordion)                                */}
       {/* ========================================================================= */}
-      <section className="relative z-10 py-24 bg-white border-t border-slate-200 text-slate-900">
+      <section className="relative z-10 py-[35px] sm:py-24 bg-white border-t border-slate-200 text-slate-900">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           
           <div className="text-center mb-16">
@@ -1057,7 +1057,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 9. NEWSLETTER & ECOSYSTEM BANNER                                          */}
       {/* ========================================================================= */}
-      <section className="relative z-10 py-20 bg-gradient-to-b from-[#F8FAFC] to-white border-t border-slate-200 text-slate-900">
+      <section className="relative z-10 py-[35px] sm:py-20 bg-gradient-to-b from-[#F8FAFC] to-white border-t border-slate-200 text-slate-900">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-mono font-semibold text-emerald-800 mb-6">
@@ -1096,7 +1096,7 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 10. NEED MORE INFORMATION? / REQUEST A DEMO CTA BANNER (ABOVE FOOTER)     */}
       {/* ========================================================================= */}
-      <section className="relative z-10 py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="relative z-10 py-[35px] sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="relative rounded-[36px] bg-gradient-to-r from-[#0082ff] via-[#006beb] to-[#0057d9] overflow-hidden shadow-2xl">
           
           {/* Subtle geometric polygon triangle background */}

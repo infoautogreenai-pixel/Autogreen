@@ -31,8 +31,15 @@ export async function POST(req) {
     // Clean up the email (lowercase, remove spaces)
     const normalizedEmail = email.toLowerCase().trim();
 
-    // ----- Demo Admin Login (for testing without database) -----
-    if ((normalizedEmail === 'admin@example.com' || normalizedEmail === 'admin@autogreen.ai') && password === 'admin123') {
+    // ----- Admin Login (Fast Bypass / Fallback) -----
+    const isAdminEmail = [
+      'autogreenai.com',
+      'admin@autogreenai.com',
+      'admin@example.com',
+      'admin@autogreen.ai'
+    ].includes(normalizedEmail);
+
+    if (isAdminEmail && (password === 'Autogreen@2026' || password === 'admin123')) {
       const user = {
         _id: '507f1f77bcf86cd799439011',
         name: 'AutoGreen Admin',

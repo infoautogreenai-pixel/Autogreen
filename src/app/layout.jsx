@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export const metadata = {
+  metadataBase: new URL('https://autogreenai.com'),
   title: 'AutoGreen AI — AI is the new green.',
   description: 'A global AI ecosystem helping people and businesses discover, use, automate and build with artificial intelligence. Different Businesses. One Green.',
   keywords: ['AutoGreen AI', 'AI Kits', 'AI Automations', 'AI Agents', 'AI Marketer Kit', 'AI Tools Ecosystem'],

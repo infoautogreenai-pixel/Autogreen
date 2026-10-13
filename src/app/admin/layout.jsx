@@ -32,19 +32,26 @@ export default function AdminLayout({ children }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
+    if (pathname === '/admin/login') return;
+
     if (!loading) {
       if (!user) {
-        router.push('/login?redirect=/admin');
+        router.push('/admin/login');
       } else if (user.role !== 'admin') {
         router.push('/dashboard');
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname]);
 
   // Close mobile sidebar on route change
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [pathname]);
+
+  // If on dedicated admin login page, render full screen login without dashboard sidebar
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (

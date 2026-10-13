@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
                 return { success: false, error: data.error || 'Login failed' };
             }
             await refreshUser();
-            return { success: true };
+            return { success: true, user: data.user };
         }
         catch {
             return { success: false, error: 'Network error during login' };

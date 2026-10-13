@@ -56,7 +56,7 @@ const config = {
         accent: {
           500: "#f59e0b",
           600: "#d97706",
-        }
+        },
       },
 
       // Custom font families: Poppins for body, sans, headings & paragraphs
@@ -65,6 +65,12 @@ const config = {
         heading: ["'Poppins'", "'PT Sans'", "sans-serif"],
         sans: ["'Poppins'", "sans-serif"],
         body: ["'Poppins'", "sans-serif"],
+      },
+
+      // Extended container max-widths
+      maxWidth: {
+        "7xl": "100rem",
+        "8xl": "100rem",
       },
     },
   },

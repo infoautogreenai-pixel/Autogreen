@@ -4,6 +4,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global Layout & Width Configuration */
+.max-w-7xl {
+  max-width: 100rem !important; /* 1600px */
+}
+
+/* Mobile section spacing: 35px top & bottom */
+@media (max-width: 767px) {
+  section {
+    padding-top: 35px !important;
+    padding-bottom: 35px !important;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #000000;

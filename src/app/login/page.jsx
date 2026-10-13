@@ -24,7 +24,11 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res.success) {
-      router.push('/dashboard');
+      if (res.user?.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } else {
       setError(res.error || 'Invalid email or password');
     }

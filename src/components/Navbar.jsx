@@ -104,6 +104,13 @@ export default function Navbar() {
                       </span>
                     </div>
 
+                    {user.role === 'admin' && (
+                      <Link href="/admin" onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-purple-700 bg-purple-50/70 hover:bg-purple-100 transition-colors">
+                        <ShieldCheck className="h-4 w-4 text-purple-600"/>
+                        Admin Dashboard
+                      </Link>
+                    )}
+
                     <Link href="/dashboard" onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors">
                       <LayoutDashboard className="h-4 w-4 text-emerald-600"/>
                       My Purchased Guides
