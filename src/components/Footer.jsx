@@ -77,11 +77,26 @@ export default function Footer() {
 
           {/* Company & Legal */}
           <div>
-            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-black mb-3">Company & Trust</h3>
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-black mb-3">Company & Portals</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/about" className="hover:text-emerald-700 text-black transition-colors">
                   About AutoGreen AI
+                </Link>
+              </li>
+              <li>
+                <Link href="/login?role=user" className="hover:text-emerald-700 text-black font-semibold transition-colors flex items-center gap-1.5">
+                  <span>User / Student Login</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/login?role=admin" className="hover:text-emerald-700 text-black font-semibold transition-colors flex items-center gap-1.5">
+                  <span>🛡️ Admin Portal Login</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/signup" className="hover:text-emerald-700 text-black transition-colors">
+                  Register New Account
                 </Link>
               </li>
               <li>
@@ -92,16 +107,6 @@ export default function Footer() {
               <li>
                 <Link href="/privacy" className="hover:text-emerald-700 text-black transition-colors">
                   Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/#resources" className="hover:text-emerald-700 text-black transition-colors">
-                  AI Guides Catalog
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="hover:text-emerald-700 text-black transition-colors">
-                  My Library & DRM Reader
                 </Link>
               </li>
             </ul>

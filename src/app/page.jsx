@@ -186,59 +186,98 @@ export default function HomePage() {
             link: 'mailto:contact@autogreen.ai'
         }
     ];
-    // AI Marketer Kit Tiers Data
-    const kitTiers = [
+    // Dynamic AI Marketer Kit Tiers Data (Synced with MongoDB Atlas & /api/kits)
+    const defaultKits = [
         {
+            id: '6adc8def486c185f0a88bdd2',
+            guideId: '6adc8def486c185f0a88bdd2',
             name: 'AI Marketer Starter',
-            badge: 'FOUNDATION',
-            price: '$49',
-            originalPrice: '$99',
+            badge: 'LEARN AI',
+            dotColor: 'emerald',
+            price: '₹99',
+            originalPrice: '₹299',
             description: 'Discover what AI can do for your daily marketing work.',
             features: [
-                '50+ Curated AI marketing tools directory',
-                '100+ High-conversion tested prompts',
-                'Daily content drafting workflows',
-                'DRM secured technical guides & PDF',
-                'Instant digital access & cloud progress'
+                '200+ AI tools',
+                '100+ prompts',
+                'Claude Skills',
+                'Beginner workflows',
+                'Claude walkthroughs',
+                'Notion Starter System',
+                'n8n introduction',
+                'AI Marketer Community'
             ],
-            cta: 'Get Starter Kit',
+            cta: 'Start with Starter →',
             popular: false
         },
         {
-            name: 'AI Marketer Community',
-            badge: 'MOST POPULAR',
-            price: '$149',
-            originalPrice: '$299',
+            id: '6adc8def486c185f0a88bdd5',
+            guideId: '6adc8def486c185f0a88bdd5',
+            name: 'AI Marketer Pro',
+            badge: 'EXECUTE WITH AI',
+            dotColor: 'amber',
+            price: '₹599',
+            originalPrice: '₹1,499',
             description: 'Turn AI tools into repeatable marketing workflows.',
             features: [
-                'Everything in AI Marketer Starter',
-                'n8n & Zapier automated lead pipelines',
-                'AI reporting & performance analytics system',
-                'Access to private AutoGreen operator community',
-                'Monthly live teardown & prompt labs',
-                'Earn 10% Cash Back Reward points'
+                'Everything in Starter',
+                'Advanced AI tools',
+                'Advanced Claude Skills',
+                'Marketing workflows',
+                'n8n automation lab',
+                '10–20 automation workflows',
+                'Marketing OS',
+                'AI reporting system',
+                'AI audit system',
+                'Advanced research workflows'
             ],
-            cta: 'Join Community & Kit',
-            popular: true
+            cta: 'Go Pro →',
+            popular: false
         },
         {
+            id: '6adc8def486c185f0a88bdd8',
+            guideId: '6adc8def486c185f0a88bdd8',
             name: 'AI Marketer Expert',
-            badge: 'SCALE & ENTERPRISE',
-            price: '$299',
-            originalPrice: '$599',
+            badge: 'BUILD WITH AI',
+            topBadge: 'Most Powerful',
+            dotColor: 'rose',
+            price: '₹1,299',
+            originalPrice: '₹2,999',
             description: 'Build your own AI marketing department.',
             features: [
-                'Everything in Community Kit',
-                'AI employee builder & multi-agent templates',
-                'AI freelancer & marketing agency operating system',
-                'Bespoke internal AI workflows & SOPs',
-                '1-on-1 strategy onboarding session',
-                'Lifetime roadmap updates included'
+                'Everything in Starter + Pro',
+                'AI employee builder',
+                'AI agents',
+                'Advanced n8n',
+                'AI Agency OS',
+                'AI freelancer system',
+                'AI marketing agency system',
+                'Custom workflow builder',
+                'Monetization systems',
+                'Expert community'
             ],
-            cta: 'Get Full Expert Stack',
-            popular: false
+            cta: 'Become an AI Operator →',
+            popular: true
         }
     ];
+
+    const [kits, setKits] = useState(defaultKits);
+
+    // Fetch dynamic kits from database
+    useEffect(() => {
+        async function loadKits() {
+            try {
+                const res = await fetch('/api/kits');
+                const data = await res.json();
+                if (data.success && Array.isArray(data.tiers) && data.tiers.length > 0) {
+                    setKits(data.tiers);
+                }
+            } catch (err) {
+                console.error('Error fetching dynamic kits:', err);
+            }
+        }
+        loadKits();
+    }, []);
     // AI Agents Directory Data
     const agents = [
         {
@@ -607,63 +646,104 @@ export default function HomePage() {
       {/* ========================================================================= */}
       {/* 3. FEATURED AI KITS & TIERS (#kits)                                       */}
       {/* ========================================================================= */}
-      <section id="kits" className="relative z-10 py-[35px] sm:py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
+      <section id="kits" className="relative z-10 py-[45px] sm:py-24 bg-[#080d1a] border-t border-slate-800 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-3">
               <Briefcase className="h-3.5 w-3.5"/>
               <span>DIGITAL TOOLKITS & WORKFLOWS</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#111827] tracking-tight">
-              Start with the <span className="text-emerald-600">AI Marketer Kit</span>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+              Start with the <span className="text-emerald-400">AI Marketer Kit</span>
             </h2>
-            <p className="mt-4 text-black text-base">
+            <p className="mt-4 text-slate-400 text-sm sm:text-base leading-relaxed">
               A role-specific digital toolkit that turns marketers into AI operators. It combines Claude Skills,
               workflows, n8n automations, and AI employees across three progressive levels.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            {kitTiers.map((tier) => (<div key={tier.name} className={`relative rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 bg-white ${tier.popular
-                ? 'border-2 border-emerald-600 shadow-2xl shadow-emerald-500/10 lg:-translate-y-2'
-                : 'border border-slate-200 shadow-md hover:shadow-xl'}`}>
-                {tier.popular && (<div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-emerald-600 text-white text-xs font-extrabold tracking-wider uppercase shadow-md shadow-emerald-600/30">
-                    {tier.badge}
-                  </div>)}
+            {kits.map((tier) => {
+              const isExpert = Boolean(tier.popular || tier.topBadge || tier.name?.toLowerCase().includes('expert'));
+              const dotColorClass =
+                tier.dotColor === 'amber'
+                  ? 'bg-amber-400'
+                  : tier.dotColor === 'rose'
+                  ? 'bg-rose-500'
+                  : 'bg-emerald-400';
 
-                <div>
-                  {!tier.popular && (<span className="text-[11px] font-mono font-bold text-emerald-700 uppercase tracking-wider block mb-1">
-                      {tier.badge}
-                    </span>)}
+              return (
+                <div
+                  key={tier.name || tier.id}
+                  className={`relative rounded-3xl p-7 sm:p-8 flex flex-col justify-between transition-all duration-300 bg-[#0c101d] ${
+                    isExpert
+                      ? 'border-2 border-emerald-500 shadow-2xl shadow-emerald-500/10 lg:-translate-y-2'
+                      : 'border border-slate-800/80 hover:border-slate-700 shadow-xl'
+                  }`}
+                >
+                  {/* Top Floating Badge for Most Powerful */}
+                  {tier.topBadge && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-emerald-400 text-slate-950 text-xs font-bold tracking-wide shadow-md shadow-emerald-500/25">
+                      {tier.topBadge}
+                    </div>
+                  )}
 
-                  <h3 className="text-2xl font-bold text-[#111827] mt-1">{tier.name}</h3>
-                  <p className="text-xs text-black mt-2 min-h-[34px]">{tier.description}</p>
+                  <div>
+                    {/* Tier Tag Line with Colored Dot */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`inline-block w-2.5 h-2.5 rounded-full ${dotColorClass}`} />
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400">
+                        {tier.badge}
+                      </span>
+                    </div>
 
-                  <div className="mt-6 flex items-baseline gap-2">
-                    <span className="text-4xl font-extrabold text-[#111827]">{tier.price}</span>
-                    <span className="text-sm text-slate-400 line-through">{tier.originalPrice}</span>
-                    <span className="text-xs text-emerald-600 font-semibold">one-time</span>
+                    {/* Title & Subtitle */}
+                    <h3 className="text-2xl font-bold text-white tracking-tight">{tier.name}</h3>
+                    <p className="text-xs sm:text-sm text-slate-400 mt-2 min-h-[38px] leading-relaxed">
+                      {tier.description}
+                    </p>
+
+                    {/* Price in ₹ */}
+                    <div className="mt-6 mb-7 flex items-baseline gap-2">
+                      <span className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+                        {tier.price}
+                      </span>
+                      <span className="text-xs sm:text-sm text-slate-400 font-medium">one-time</span>
+                    </div>
+
+                    {/* Checklist Features */}
+                    <div className="space-y-3.5 mb-8">
+                      {tier.features.map((feat, idx) => (
+                        <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-[13px] text-slate-300">
+                          <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <span>{feat}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="mt-8 space-y-3">
-                    <p className="text-xs font-bold uppercase tracking-wider text-black">What is included:</p>
-                    {tier.features.map((feat, idx) => (<div key={idx} className="flex items-start gap-2.5 text-xs text-black">
-                        <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5"/>
-                        <span>{feat}</span>
-                      </div>))}
+                  {/* Action CTA Button */}
+                  <div className="pt-6 border-t border-slate-800/80">
+                    <Link
+                      href={`/checkout?guideId=${tier.guideId || tier.id}&tier=${encodeURIComponent(
+                        tier.name
+                      )}&price=${encodeURIComponent(tier.price)}`}
+                      className={`w-full py-3.5 px-6 rounded-full text-center text-sm flex items-center justify-center gap-2 transition-all ${
+                        isExpert
+                          ? 'bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold shadow-lg shadow-emerald-500/25 active:scale-[0.99]'
+                          : 'bg-[#121827] hover:bg-slate-800 text-white font-semibold border border-slate-700/80 shadow-md active:scale-[0.99]'
+                      }`}
+                    >
+                      <span>{tier.cta}</span>
+                      <ArrowRight
+                        className={`h-4 w-4 ${isExpert ? 'text-slate-950' : 'text-slate-300'}`}
+                      />
+                    </Link>
                   </div>
                 </div>
-
-                <div className="mt-8 pt-6 border-t border-slate-100">
-                  <Link href={`/checkout?tier=${encodeURIComponent(tier.name)}&price=${encodeURIComponent(tier.price)}`} className={`w-full py-3 px-4 rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 transition-all ${tier.popular
-                ? 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-md shadow-emerald-600/20'
-                : 'bg-slate-900 border border-slate-800 text-white hover:bg-slate-800'}`}>
-                    <span>{tier.cta}</span>
-                    <ArrowRight className="h-4 w-4"/>
-                  </Link>
-                </div>
-              </div>))}
+              );
+            })}
           </div>
 
         </div>

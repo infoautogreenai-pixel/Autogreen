@@ -42,6 +42,12 @@ const GuideSchema = new Schema(
     salesCount: { type: Number, default: 0 },                               // Total sales
     level: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced', 'All Levels'], default: 'All Levels' },
     highlights: [{ type: String }],                                         // Key selling points
+    badge: { type: String, default: '' },                                   // e.g. "LEARN AI", "EXECUTE WITH AI"
+    topBadge: { type: String, default: '' },                                // e.g. "Most Powerful"
+    ctaText: { type: String, default: '' },                                 // e.g. "Start with Starter →"
+    dotColor: { type: String, default: 'emerald' },                         // "emerald", "amber", "rose"
+    popular: { type: Boolean, default: false },                             // Highlight card as most powerful
+    orderIndex: { type: Number, default: 0 },                               // Sort order for homepage display
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt
 );

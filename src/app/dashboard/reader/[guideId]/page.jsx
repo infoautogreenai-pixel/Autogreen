@@ -55,23 +55,23 @@ export default function ReaderPage() {
         }
     }, [guideId, user, authLoading, router]);
     if (authLoading || loading) {
-        return (<div className="h-screen w-screen flex flex-col items-center justify-center bg-[#090d16] text-white">
-        <Loader2 className="h-10 w-10 animate-spin text-brand-500 mb-4"/>
-        <p className="text-sm font-semibold text-slate-300">Authenticating DRM reader session...</p>
+        return (<div className="h-screen w-screen flex flex-col items-center justify-center bg-white text-slate-900">
+        <Loader2 className="h-10 w-10 animate-spin text-emerald-600 mb-4"/>
+        <p className="text-base font-semibold text-slate-800">Authenticating DRM reader session...</p>
         <p className="text-xs text-slate-500 mt-1">Generating personalized canvas watermark</p>
       </div>);
     }
     if (error || !guide || !user) {
-        return (<div className="h-screen w-screen flex items-center justify-center bg-[#090d16] p-4 text-white">
-        <div className="max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-8 text-center space-y-4 shadow-2xl">
-          <AlertCircle className="h-12 w-12 text-rose-400 mx-auto"/>
-          <h2 className="text-lg font-bold text-white">Access Denied</h2>
-          <p className="text-xs text-slate-300">{error || 'User session required'}</p>
+        return (<div className="h-screen w-screen flex items-center justify-center bg-[#F8FAFC] p-4 text-slate-900">
+        <div className="max-w-md rounded-2xl bg-white border border-slate-200 p-8 text-center space-y-4 shadow-xl">
+          <AlertCircle className="h-12 w-12 text-rose-500 mx-auto"/>
+          <h2 className="text-lg font-bold text-slate-900">Access Denied</h2>
+          <p className="text-xs text-slate-600">{error || 'User session required'}</p>
           <div className="flex items-center justify-center gap-3 pt-2">
-            <Link href="/dashboard" className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold">
+            <Link href="/dashboard" className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold">
               <ArrowLeft className="h-4 w-4"/> Back to Library
             </Link>
-            <Link href={`/checkout/${guideId}`} className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold">
+            <Link href={`/checkout?guideId=${guideId}`} className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold">
               <ShoppingBag className="h-4 w-4"/> Purchase Guide
             </Link>
           </div>

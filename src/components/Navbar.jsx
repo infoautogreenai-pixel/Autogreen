@@ -9,6 +9,7 @@ export default function Navbar() {
     const pathname = usePathname();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
     const isActive = (path) => pathname === path;
     // Don't show public nav inside login, signup, reader, or admin portal
     if (
@@ -61,15 +62,16 @@ export default function Navbar() {
         </nav>
 
         {/* Right Action Bar */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3">
           <a href="mailto:contact@autogreen.ai" className="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
             Talk to AutoGreen
           </a>
 
-          <Link href="/#kits" className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-500 transition-all shadow-sm shadow-emerald-600/20">
+          <Link href="/#kits" className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-500 transition-all shadow-sm shadow-emerald-600/20">
             <span>Explore AI Kits</span>
             <span className="text-xs">↗</span>
           </Link>
+
           {user ? (<div className="flex items-center gap-3">
               {/* My Purchases Shortcut */}
               <Link href="/dashboard" className={`flex items-center gap-1.5 text-sm font-medium px-3.5 py-1.5 rounded-lg border transition-all ${isActive('/dashboard')
@@ -137,12 +139,72 @@ export default function Navbar() {
                     </button>
                   </div>)}
               </div>
-            </div>) : (<div className="flex items-center gap-3">
-              <Link href="/login" className="text-sm font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 transition-colors">
-                Log In
-              </Link>
-              <Link href="/signup" className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold shadow-sm hover:bg-emerald-500 transition-all hover:scale-[1.02]">
-                <Sparkles className="h-4 w-4"/>
+            </div>) : (<div className="flex items-center gap-2">
+              {/* Login Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                  onMouseEnter={() => setLoginDropdownOpen(true)}
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  <span>Log In</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                </button>
+
+                {loginDropdownOpen && (
+                  <div
+                    onMouseLeave={() => setLoginDropdownOpen(false)}
+                    className="absolute right-0 mt-1 w-64 rounded-2xl bg-white border border-slate-200 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100"
+                  >
+                    <p className="px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">
+                      Select Login Portal
+                    </p>
+
+                    <Link
+                      href="/login?role=user"
+                      onClick={() => setLoginDropdownOpen(false)}
+                      className="flex items-start gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors group"
+                    >
+                      <div className="h-8 w-8 rounded-lg bg-blue-50 border border-blue-200 text-[#1222e8] flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                        <UserIcon className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="block text-xs font-bold text-slate-900 group-hover:text-[#1222e8] transition-colors">
+                          User / Member Login
+                        </span>
+                        <span className="block text-[11px] text-slate-500">
+                          For students & buyers (Multi-user)
+                        </span>
+                      </div>
+                    </Link>
+
+                    <Link
+                      href="/login?role=admin"
+                      onClick={() => setLoginDropdownOpen(false)}
+                      className="flex items-start gap-3 px-4 py-2.5 hover:bg-emerald-50/60 transition-colors group"
+                    >
+                      <div className="h-8 w-8 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                        <ShieldCheck className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="block text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                          Admin Portal Login
+                        </span>
+                        <span className="block text-[11px] text-slate-500">
+                          Management & platform control
+                        </span>
+                      </div>
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              <Link
+                href="/signup"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-semibold shadow-sm hover:bg-emerald-500 transition-all hover:scale-[1.02]"
+              >
+                <Sparkles className="h-4 w-4" />
                 <span>Get Started</span>
               </Link>
             </div>)}
@@ -186,11 +248,28 @@ export default function Navbar() {
                 Sign Out
               </button>
             </>) : (<div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full py-2.5 text-center text-sm font-semibold rounded-xl bg-slate-100 border border-slate-200 text-slate-900">
-                Log In
+              <Link
+                href="/login?role=user"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2.5 px-4 text-left text-sm font-semibold rounded-xl bg-slate-100 border border-slate-200 text-slate-900 flex items-center gap-2"
+              >
+                <UserIcon className="h-4 w-4 text-[#1222e8]" />
+                <span>User / Student Login</span>
               </Link>
-              <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="w-full py-2.5 text-center text-sm font-semibold rounded-xl bg-emerald-600 text-white">
-                Sign Up
+              <Link
+                href="/login?role=admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2.5 px-4 text-left text-sm font-semibold rounded-xl bg-slate-900 text-white flex items-center gap-2"
+              >
+                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                <span>Admin Portal Login</span>
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2.5 text-center text-sm font-semibold rounded-xl bg-emerald-600 text-white"
+              >
+                Create Account (Multi-User)
               </Link>
             </div>)}
         </div>)}

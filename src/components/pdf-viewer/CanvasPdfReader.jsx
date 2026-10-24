@@ -14,13 +14,34 @@ export default function CanvasPdfReader({ guideId, guideTitle, userEmail, userNa
     const [totalPages, setTotalPages] = useState(0);
     const [currentPage, setCurrentPage] = useState(initialPage);
     const [zoom, setZoom] = useState(100);
-    const [theme, setTheme] = useState('dark');
+    const [theme, setTheme] = useState('light');
     const [viewMode, setViewMode] = useState('single');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showThumbnails, setShowThumbnails] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [securityWarning, setSecurityWarning] = useState(null);
+
+    // Load saved reader theme if previously set, otherwise default is 'light'
+    useEffect(() => {
+        try {
+            const savedTheme = localStorage.getItem('autogreen_reader_theme');
+            if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'sepia')) {
+                setTheme(savedTheme);
+            }
+        } catch {
+            // ignore localStorage errors
+        }
+    }, []);
+
+    const handleThemeChange = (newTheme) => {
+        setTheme(newTheme);
+        try {
+            localStorage.setItem('autogreen_reader_theme', newTheme);
+        } catch {
+            // ignore
+        }
+    };
     // 1. Fetch protected PDF stream and load into PDF.js
     useEffect(() => {
         let isMounted = true;
@@ -225,9 +246,9 @@ export default function CanvasPdfReader({ guideId, guideTitle, userEmail, userNa
         }
         return 'none';
     };
-    return (<div ref={containerRef} className={`relative flex h-screen w-full flex-col overflow-hidden select-none no-select ${theme === 'dark' ? 'bg-[#090d16]' : theme === 'sepia' ? 'bg-[#eadecc]' : 'bg-[#e2e8f0]'}`} onContextMenu={(e) => e.preventDefault()}>
+    return (<div ref={containerRef} className={`relative flex h-screen w-full flex-col overflow-hidden select-none no-select ${theme === 'dark' ? 'bg-[#090d16]' : theme === 'sepia' ? 'bg-[#eadecc]' : 'bg-[#f8fafc]'}`} onContextMenu={(e) => e.preventDefault()}>
       {/* Top Controls Toolbar */}
-      <ReaderToolbar title={guideTitle} currentPage={currentPage} totalPages={totalPages} zoom={zoom} theme={theme} viewMode={viewMode} isFullscreen={isFullscreen} isPreview={isPreview} onPageChange={handlePageChange} onZoomChange={setZoom} onThemeChange={setTheme} onViewModeChange={setViewMode} onToggleFullscreen={handleToggleFullscreen} onToggleThumbnails={() => setShowThumbnails(!showThumbnails)} showThumbnails={showThumbnails}/>
+      <ReaderToolbar title={guideTitle} currentPage={currentPage} totalPages={totalPages} zoom={zoom} theme={theme} viewMode={viewMode} isFullscreen={isFullscreen} isPreview={isPreview} onPageChange={handlePageChange} onZoomChange={setZoom} onThemeChange={handleThemeChange} onViewModeChange={setViewMode} onToggleFullscreen={handleToggleFullscreen} onToggleThumbnails={() => setShowThumbnails(!showThumbnails)} showThumbnails={showThumbnails}/>
 
       {/* Floating Security Alert Toast */}
       {securityWarning && (<div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 rounded-xl bg-rose-950/90 border border-rose-500/50 px-4 py-2.5 text-xs font-semibold text-rose-200 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-200">
@@ -239,15 +260,17 @@ export default function CanvasPdfReader({ guideId, guideTitle, userEmail, userNa
       <div className="relative flex flex-1 overflow-hidden">
         
         {/* Optional Page Thumbnails Drawer */}
-        {showThumbnails && (<aside className="w-56 shrink-0 border-r border-slate-800 bg-slate-950/90 p-3 overflow-y-auto space-y-3 z-30">
-            <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Page Thumbnails</h4>
+        {showThumbnails && (<aside className={`w-56 shrink-0 border-r p-3 overflow-y-auto space-y-3 z-30 transition-colors ${
+            theme === 'light' ? 'border-slate-200 bg-white/95 text-slate-800 shadow-sm' : 'border-slate-800 bg-slate-950/90 text-slate-300'
+          }`}>
+            <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>Page Thumbnails</h4>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => {
                 const isLocked = isPreview && pNum > previewPagesLimit;
                 return (<button key={pNum} disabled={isLocked} onClick={() => handlePageChange(pNum)} className={`w-full flex items-center justify-between p-2 rounded-lg text-xs font-medium transition-all ${currentPage === pNum
-                        ? 'bg-brand-600 text-white shadow-md'
+                        ? 'bg-emerald-600 text-white shadow-md'
                         : isLocked
-                            ? 'bg-slate-900/40 text-slate-600 opacity-60 cursor-not-allowed'
-                            : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white'}`}>
+                            ? theme === 'light' ? 'bg-slate-100 text-slate-400 opacity-60 cursor-not-allowed' : 'bg-slate-900/40 text-slate-600 opacity-60 cursor-not-allowed'
+                            : theme === 'light' ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white'}`}>
                   <span className="flex items-center gap-1.5">
                     {isLocked ? <Lock className="h-3 w-3 text-amber-500"/> : `Page ${pNum}`}
                   </span>
@@ -259,9 +282,9 @@ export default function CanvasPdfReader({ guideId, guideTitle, userEmail, userNa
         {/* Reader Canvas Container */}
         <main className="relative flex-1 overflow-y-auto overflow-x-auto p-4 sm:p-8 flex flex-col items-center justify-start">
           
-          {loading && (<div className="flex flex-col items-center justify-center my-auto gap-3 text-slate-400">
-              <Loader2 className="h-8 w-8 animate-spin text-brand-400"/>
-              <p className="text-sm font-medium">Decrypting and streaming protected document...</p>
+          {loading && (<div className={`flex flex-col items-center justify-center my-auto gap-3 ${theme === 'light' ? 'text-slate-700' : 'text-slate-400'}`}>
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-600"/>
+              <p className="text-sm font-semibold">Decrypting and streaming protected document...</p>
             </div>)}
 
           {error && (<div className="max-w-md my-auto rounded-2xl bg-rose-950/40 border border-rose-800/60 p-6 text-center space-y-4">
@@ -269,7 +292,7 @@ export default function CanvasPdfReader({ guideId, guideTitle, userEmail, userNa
               <h3 className="text-base font-bold text-white">Access Restricted</h3>
               <p className="text-xs text-rose-200">{error}</p>
               <div className="pt-2">
-                <Link href={`/checkout/${guideId}`} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg shadow-brand-500/20">
+                <Link href={`/checkout?guideId=${guideId}`} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/20">
                   <ShoppingCart className="h-4 w-4"/>
                   <span>Purchase Full Course to Unlock</span>
                 </Link>
@@ -277,7 +300,7 @@ export default function CanvasPdfReader({ guideId, guideTitle, userEmail, userNa
             </div>)}
 
           {/* Single Page View */}
-          {!loading && !error && viewMode === 'single' && (<div className="relative my-auto flex flex-col items-center shadow-2xl rounded-lg overflow-hidden border border-slate-700/50">
+          {!loading && !error && viewMode === 'single' && (<div className={`relative my-auto flex flex-col items-center rounded-lg overflow-hidden ${theme === 'light' ? 'border border-slate-300 shadow-2xl' : 'border border-slate-700/50 shadow-2xl'}`}>
               <div className="relative bg-white rounded-lg overflow-hidden" style={{ filter: getCanvasFilter() }}>
                 <canvas ref={(el) => {
                 canvasRefs.current[currentPage] = el;
@@ -290,7 +313,7 @@ export default function CanvasPdfReader({ guideId, guideTitle, userEmail, userNa
 
           {/* Continuous Scroll View */}
           {!loading && !error && viewMode === 'continuous' && (<div className="flex flex-col items-center gap-8 max-w-full">
-              {Array.from({ length: isPreview ? Math.min(totalPages, previewPagesLimit) : totalPages }, (_, i) => i + 1).map((pNum) => (<div key={pNum} className="relative flex flex-col items-center shadow-2xl rounded-lg overflow-hidden border border-slate-700/50">
+              {Array.from({ length: isPreview ? Math.min(totalPages, previewPagesLimit) : totalPages }, (_, i) => i + 1).map((pNum) => (<div key={pNum} className={`relative flex flex-col items-center rounded-lg overflow-hidden ${theme === 'light' ? 'border border-slate-300 shadow-2xl' : 'border border-slate-700/50 shadow-2xl'}`}>
                   <div className="relative bg-white rounded-lg overflow-hidden" style={{ filter: getCanvasFilter() }}>
                     <canvas ref={(el) => {
                     canvasRefs.current[pNum] = el;

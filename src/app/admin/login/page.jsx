@@ -42,14 +42,22 @@ export default function AdminLoginPage() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Top back button */}
-      <div className="absolute top-6 left-6 z-20">
+      {/* Top navigation buttons */}
+      <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 px-3.5 py-2 rounded-xl transition-all"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Site</span>
+        </Link>
+
+        <Link
+          href="/login?role=user"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/40 hover:bg-blue-900/40 border border-blue-900/50 px-3.5 py-2 rounded-xl transition-all"
+        >
+          <span>Switch to User Login</span>
+          <span>→</span>
         </Link>
       </div>
 

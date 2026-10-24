@@ -69,6 +69,12 @@ export async function POST(req) {
       isFeatured = false,
       pdfFiles = [],
       highlights = [],
+      badge = '',
+      topBadge = '',
+      ctaText = '',
+      dotColor = 'emerald',
+      popular = false,
+      orderIndex = 0,
     } = body;
 
     // Validate required fields
@@ -110,6 +116,12 @@ export async function POST(req) {
       isFeatured: Boolean(isFeatured),
       pdfFiles: pdfFiles || [],
       highlights: Array.isArray(highlights) ? highlights : [],
+      badge,
+      topBadge,
+      ctaText,
+      dotColor,
+      popular: Boolean(popular),
+      orderIndex: Number(orderIndex) || 0,
     });
 
     return NextResponse.json({ success: true, guide });

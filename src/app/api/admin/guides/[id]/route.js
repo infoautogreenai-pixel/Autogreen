@@ -69,6 +69,12 @@ export async function PUT(req, { params }) {
     if (updates.tags) guide.tags = Array.isArray(updates.tags) ? updates.tags : updates.tags.split(',').map((t) => t.trim()).filter(Boolean);
     if (updates.pdfFiles) guide.pdfFiles = updates.pdfFiles;
     if (updates.highlights) guide.highlights = Array.isArray(updates.highlights) ? updates.highlights : [];
+    if (updates.badge !== undefined) guide.badge = updates.badge;
+    if (updates.topBadge !== undefined) guide.topBadge = updates.topBadge;
+    if (updates.ctaText !== undefined) guide.ctaText = updates.ctaText;
+    if (updates.dotColor !== undefined) guide.dotColor = updates.dotColor;
+    if (updates.popular !== undefined) guide.popular = Boolean(updates.popular);
+    if (updates.orderIndex !== undefined) guide.orderIndex = Number(updates.orderIndex);
 
     await guide.save();
 
