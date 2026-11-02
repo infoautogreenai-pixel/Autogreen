@@ -8,12 +8,13 @@ import { getSessionFromCookies } from '@/lib/auth';
 // =============================================
 // ADMIN STATS API Route — GET /api/admin/stats
 // =============================================
-// Returns dashboard statistics for the admin panel:
-// - Total revenue, today's revenue, monthly revenue
-// - Total users, guides, orders
+// Returns live, real dynamic dashboard statistics for the admin panel:
+// - Total genuine customer revenue, today's revenue, monthly revenue
+// - Registered customer leads/users (excludes admins)
+// - Total guides, active guides
 // - Category-wise sales distribution
-// - Revenue chart data (last 14 days)
-// - Recent 5 orders
+// - Real daily revenue chart data (last 14 days)
+// - Recent real customer orders
 
 export async function GET() {
   try {
@@ -24,12 +25,26 @@ export async function GET() {
 
     await connectToDatabase();
 
-    // ---- 1. Core KPIs (Key Performance Indicators) ----
-    const totalUsers = await User.countDocuments();
+    // ---- 1. Customer Leads / Registered Users (Exclude Admins) ----
+    const totalUsers = await User.countDocuments({ role: { $ne: 'admin' } });
     const totalGuides = await Guide.countDocuments();
     const activeGuides = await Guide.countDocuments({ isActive: true });
-    const totalOrders = await Order.countDocuments();
-    const successfulOrders = await Order.find({ status: 'success' });
+
+    // Exclude any internal admin email orders if any exist
+    const adminFilter = {
+      'customerDetails.email': { $nin: ['admin@autogreenai.com', 'admin@example.com'] },
+    };
+
+    // Customer Orders & Real Revenue
+    const totalOrders = await Order.countDocuments({
+      ...adminFilter,
+      status: 'success',
+    });
+
+    const successfulOrders = await Order.find({
+      ...adminFilter,
+      status: 'success',
+    });
 
     // Calculate total revenue and points distributed
     const totalRevenue = successfulOrders.reduce((sum, ord) => sum + (ord.amount || 0), 0);
@@ -52,7 +67,7 @@ export async function GET() {
       { $sort: { totalSales: -1 } },
     ]);
 
-    // ---- 4. Last 14 days revenue chart data ----
+    // ---- 4. Last 14 days dynamic revenue chart data ----
     const dailyRevenueMap = {};
     for (let i = 13; i >= 0; i--) {
       const d = new Date();
@@ -74,8 +89,11 @@ export async function GET() {
       revenue,
     }));
 
-    // ---- 5. Recent 5 orders ----
-    const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(5).exec();
+    // ---- 5. Recent 5 genuine customer orders ----
+    const recentOrders = await Order.find(adminFilter)
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .exec();
 
     return NextResponse.json({
       success: true,

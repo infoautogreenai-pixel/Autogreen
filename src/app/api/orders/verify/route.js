@@ -4,10 +4,12 @@ import User from '@/models/User';
 import Guide from '@/models/Guide';
 import Order from '@/models/Order';
 import Coupon from '@/models/Coupon';
+import Settings from '@/models/Settings';
+import crypto from 'crypto';
 import { getSessionFromCookies } from '@/lib/auth';
 
 // =============================================
-// VERIFY PAYMENT API Route — POST /api/orders/verify
+// VERIFY PAYMENT API Route â€” POST /api/orders/verify
 // =============================================
 // Called after payment is completed.
 // This route:
@@ -61,6 +63,25 @@ export async function POST(req) {
     const guide = await Guide.findById(order.guideId);
     if (!guide) {
       return NextResponse.json({ success: false, error: 'Guide not found' }, { status: 404 });
+    }
+
+    // Verify Razorpay HMAC signature if real Razorpay credentials are used
+    if (gateway === 'razorpay' && signature !== 'AUTO_VERIFIED_SIGNATURE') {
+      const settings = (await Settings.findOne()) || {};
+      const keySecret = process.env.RAZORPAY_KEY_SECRET || settings.razorpayKeySecret;
+      if (keySecret) {
+        const expectedSignature = crypto
+          .createHmac('sha256', keySecret)
+          .update(`${order.paymentGatewayOrderId}|${paymentId}`)
+          .digest('hex');
+
+        if (expectedSignature !== signature) {
+          return NextResponse.json(
+            { success: false, error: 'Payment signature verification failed. Please contact support.' },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // ---- Step 1: Mark order as successful ----

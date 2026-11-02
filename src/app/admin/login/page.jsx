@@ -4,22 +4,39 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { ShieldCheck, Lock, ArrowLeft, Loader2, KeyRound, Sparkles } from 'lucide-react';
+import {
+  ShieldCheck,
+  Lock,
+  ArrowLeft,
+  Loader2,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+
+function UserIcon({ className = 'h-4 w-4' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const { user, login } = useAuth();
-  const [email, setEmail] = useState('autogreenai.com');
-  const [password, setPassword] = useState('Autogreen@2026');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // If already logged in as admin, go straight to /admin
   useEffect(() => {
     if (user && user.role === 'admin') {
-      router.push('/admin');
+      window.location.href = '/admin';
     }
-  }, [user, router]);
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +47,7 @@ export default function AdminLoginPage() {
     setLoading(false);
 
     if (res.success) {
-      router.push('/admin');
+      window.location.href = '/admin';
     } else {
       setError(res.error || 'Invalid admin credentials');
     }
@@ -43,7 +60,7 @@ export default function AdminLoginPage() {
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Top navigation buttons */}
-      <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between">
+      <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between max-w-5xl mx-auto">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 px-3.5 py-2 rounded-xl transition-all"
@@ -53,15 +70,16 @@ export default function AdminLoginPage() {
         </Link>
 
         <Link
-          href="/login?role=user"
+          href="/login"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/40 hover:bg-blue-900/40 border border-blue-900/50 px-3.5 py-2 rounded-xl transition-all"
         >
-          <span>Switch to User Login</span>
+          <UserIcon className="h-3.5 w-3.5" />
+          <span>Switch to Student Login</span>
           <span>→</span>
         </Link>
       </div>
 
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-md relative z-10 pt-10 sm:pt-0">
         {/* Card Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-lg shadow-emerald-500/20 mb-4 border border-emerald-400/30">
@@ -95,9 +113,10 @@ export default function AdminLoginPage() {
                 <input
                   type="text"
                   required
+                  autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="autogreenai.com"
+                  placeholder="Enter admin username or email"
                   className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono"
                 />
               </div>
@@ -110,15 +129,24 @@ export default function AdminLoginPage() {
                   Admin Password
                 </label>
               </div>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono"
+                  placeholder="Enter admin password"
+                  className="w-full px-4 py-3 pr-10 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 text-slate-400 hover:text-white transition-colors"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
@@ -141,13 +169,6 @@ export default function AdminLoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Helper Notice */}
-          <div className="mt-6 pt-5 border-t border-slate-800/80 text-center">
-            <p className="text-[11px] text-slate-500 font-mono">
-              Configured Credentials: <span className="text-emerald-400">autogreenai.com</span>
-            </p>
-          </div>
         </div>
 
         {/* Footer info */}

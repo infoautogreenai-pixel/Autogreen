@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import Guide from '@/models/Guide';
 import { seedDatabase } from '@/lib/seed';
+import { ensureAiMarketerKits } from '@/lib/kits-init';
 
 // =============================================
 // LIST GUIDES API Route — GET /api/guides
@@ -13,6 +14,13 @@ import { seedDatabase } from '@/lib/seed';
 export async function GET(req) {
   try {
     await connectToDatabase();
+
+    // Ensure core AI Marketer tiers (Starter ₹99, Pro ₹599, Expert ₹1,299) exist in DB
+    try {
+      await ensureAiMarketerKits();
+    } catch (kitInitErr) {
+      console.warn('Kit initialization notice:', kitInitErr.message);
+    }
 
     // Auto-seed if database is empty (first time setup)
     const count = await Guide.countDocuments();
@@ -62,8 +70,8 @@ export async function GET(req) {
     } else if (sort === 'popular') {
       query = query.sort({ salesCount: -1, rating: -1 });        // Most popular first
     } else {
-      // Default: featured courses first, then by rating
-      query = query.sort({ isFeatured: -1, rating: -1, createdAt: -1 });
+      // Default: AI Marketer core kits first (orderIndex: 1, 2, 3), then featured, then newest
+      query = query.sort({ orderIndex: 1, isFeatured: -1, rating: -1, createdAt: -1 });
     }
 
     const guides = await query.exec();
@@ -78,7 +86,6 @@ export async function GET(req) {
     });
   } catch (error) {
     console.error('Fetch guides error:', error);
-    const msg = error instanceof Error ? error.message : 'Failed to fetch guides';
-    return NextResponse.json({ success: false, error: msg }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to fetch guides' }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import Guide from '@/models/Guide';
 import { getSessionFromCookies } from '@/lib/auth';
+import { ensureAiMarketerKits } from '@/lib/kits-init';
 
 // =============================================
 // ADMIN GUIDES API Route — /api/admin/guides
@@ -20,6 +21,13 @@ export async function GET(req) {
 
     await connectToDatabase();
 
+    // Ensure core AI Marketer tiers (Starter ₹99, Pro ₹599, Expert ₹1,299) exist
+    try {
+      await ensureAiMarketerKits();
+    } catch (kitErr) {
+      console.warn('Admin kits sync note:', kitErr.message);
+    }
+
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search');
     const category = searchParams.get('category');
@@ -33,10 +41,11 @@ export async function GET(req) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
         { category: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } },
       ];
     }
 
-    const guides = await Guide.find(filter).sort({ createdAt: -1 }).exec();
+    const guides = await Guide.find(filter).sort({ orderIndex: 1, createdAt: -1 }).exec();
     return NextResponse.json({ success: true, guides });
   } catch (error) {
     console.error('Admin fetch guides error:', error);
@@ -100,21 +109,22 @@ export async function POST(req) {
       slug = `${baseSlug}-${counter++}`;
     }
 
+    // Create the guide in database
     const guide = await Guide.create({
       title: title.trim(),
       slug,
       description: description.trim(),
       shortDescription: (shortDescription || description.slice(0, 150)).trim(),
-      coverImage: coverImage || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+      coverImage: coverImage || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
       price: Number(price),
-      originalPrice: originalPrice ? Number(originalPrice) : undefined,
+      originalPrice: Number(originalPrice) || undefined,
       category: category.trim(),
       tags: Array.isArray(tags) ? tags : tags.split(',').map((t) => t.trim()).filter(Boolean),
       level,
       previewPages: Number(previewPages),
       isActive: Boolean(isActive),
       isFeatured: Boolean(isFeatured),
-      pdfFiles: pdfFiles || [],
+      pdfFiles: Array.isArray(pdfFiles) ? pdfFiles : [],
       highlights: Array.isArray(highlights) ? highlights : [],
       badge,
       topBadge,

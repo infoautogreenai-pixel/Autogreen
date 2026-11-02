@@ -8,7 +8,7 @@ import Settings from '@/models/Settings';
 import { getSessionFromCookies } from '@/lib/auth';
 
 // =============================================
-// CREATE ORDER API Route — POST /api/orders/create
+// CREATE ORDER API Route â€” POST /api/orders/create
 // =============================================
 // Creates a new purchase order when a user wants to buy a course.
 // Handles:
@@ -43,6 +43,17 @@ export async function POST(req) {
     const user = await User.findById(session.userId);
     if (!user) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+    }
+
+    // Administrators have master DRM access and should not generate customer orders/leads
+    if (user.role === 'admin') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Administrator accounts have full master access to all guides and cannot create consumer purchase orders.',
+        },
+        { status: 400 }
+      );
     }
 
     // Find the course guide
@@ -113,11 +124,11 @@ export async function POST(req) {
       const availableUserPoints = user.points || 0;
       pointsToRedeem = Math.min(redeemPoints, availableUserPoints);
 
-      // Calculate how much ₹ discount the points give
+      // Calculate how much â‚¹ discount the points give
       const potentialCashDiscount = pointsToRedeem * (settings.pointsRedeemRate || 0.5);
       pointsDiscount = Math.min(potentialCashDiscount, remainingAfterCoupon);
 
-      // Adjust actual points needed (if order is already ₹0)
+      // Adjust actual points needed (if order is already â‚¹0)
       pointsToRedeem = Math.ceil(pointsDiscount / (settings.pointsRedeemRate || 0.5));
     }
 
@@ -129,6 +140,42 @@ export async function POST(req) {
 
     // Generate unique order number
     const orderNumber = `ORD-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Check Razorpay Configuration
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID || settings.razorpayKeyId || '';
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || settings.razorpayKeySecret || '';
+    let razorpayOrderId = null;
+
+    if (paymentGateway === 'razorpay' && razorpayKeyId && razorpayKeySecret && finalPayableAmount > 0) {
+      try {
+        const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
+        const rzpRes = await fetch('https://api.razorpay.com/v1/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader,
+          },
+          body: JSON.stringify({
+            amount: finalPayableAmount * 100, // paise (₹99 -> 9900 paise)
+            currency: 'INR',
+            receipt: orderNumber,
+            notes: {
+              guideTitle: guide.title,
+              customerEmail: user.email,
+            },
+          }),
+        });
+
+        const rzpData = await rzpRes.json();
+        if (rzpData && rzpData.id) {
+          razorpayOrderId = rzpData.id;
+        } else {
+          console.error('Razorpay order creation response:', rzpData);
+        }
+      } catch (rzpErr) {
+        console.error('Razorpay API request error:', rzpErr);
+      }
+    }
 
     // ---- Step 4: Create Order Record ----
     const order = await Order.create({
@@ -144,7 +191,7 @@ export async function POST(req) {
       pointsEarned,
       couponCode: couponCode || '',
       paymentGateway,
-      paymentGatewayOrderId: `${paymentGateway.toUpperCase()}_ORDER_${Date.now()}`,
+      paymentGatewayOrderId: razorpayOrderId || `${paymentGateway.toUpperCase()}_ORDER_${Date.now()}`,
       status: 'pending',
       customerDetails: {
         name: user.name,
@@ -166,6 +213,8 @@ export async function POST(req) {
         amount: finalPayableAmount,
         paymentGateway,
         paymentGatewayOrderId: order.paymentGatewayOrderId,
+        razorpayOrderId,
+        razorpayKeyId: razorpayKeyId || '',
       },
     });
   } catch (error) {

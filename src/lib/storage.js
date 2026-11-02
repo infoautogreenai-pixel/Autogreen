@@ -2,17 +2,16 @@ import fs from 'fs';
 import path from 'path';
 
 // =============================================
-// Secure PDF Storage Helper
+// Secure PDF & Public Uploads Storage Helper
 // =============================================
-// This file handles saving, reading, and deleting PDF files
+// This file handles saving, reading, and deleting files
 // on the server's file system.
-//
-// IMPORTANT: Files are stored in a PRIVATE folder (not in /public)
-// so users can't download them directly by guessing the URL.
-// Only authorized users can access PDFs through our API.
 
 // Path to the secure storage folder (outside of /public for security)
 const STORAGE_DIR = path.join(process.cwd(), 'storage', 'secure_pdfs');
+
+// Path to public uploads folder (for public assets like cover images)
+const PUBLIC_UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 
 /**
  * Make sure the storage folder exists.
@@ -20,7 +19,16 @@ const STORAGE_DIR = path.join(process.cwd(), 'storage', 'secure_pdfs');
  */
 export function ensureStorageDir() {
   if (!fs.existsSync(STORAGE_DIR)) {
-    fs.mkdirSync(STORAGE_DIR, { recursive: true }); // recursive = create parent folders too
+    fs.mkdirSync(STORAGE_DIR, { recursive: true });
+  }
+}
+
+/**
+ * Make sure the public uploads folder exists.
+ */
+export function ensurePublicUploadsDir() {
+  if (!fs.existsSync(PUBLIC_UPLOADS_DIR)) {
+    fs.mkdirSync(PUBLIC_UPLOADS_DIR, { recursive: true });
   }
 }
 
@@ -34,20 +42,38 @@ export function ensureStorageDir() {
 export async function savePdfFile(buffer, fileName) {
   ensureStorageDir();
 
-  // Create a safe unique file name using timestamp + cleaned original name
-  // This prevents duplicate names and removes special characters
   const safeName = `${Date.now()}_${fileName.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
   const filePath = path.join(STORAGE_DIR, safeName);
 
-  // Write the file to disk
   await fs.promises.writeFile(filePath, buffer);
-
-  // Get file info (like size)
   const stats = await fs.promises.stat(filePath);
 
   return {
-    fileKey: safeName,      // Unique identifier to find this file later
-    fileSize: stats.size,   // File size in bytes
+    fileKey: safeName,
+    fileSize: stats.size,
+  };
+}
+
+/**
+ * Save an image file to public uploads.
+ * 
+ * @param {Buffer} buffer - Image file data
+ * @param {string} fileName - Original file name
+ * @returns {Promise<Object>} - { fileName: unique file name, url: public path }
+ */
+export async function savePublicImage(buffer, fileName) {
+  ensurePublicUploadsDir();
+
+  const ext = path.extname(fileName).toLowerCase() || '.png';
+  const baseName = path.basename(fileName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+  const safeName = `${Date.now()}_${baseName}${ext}`;
+  const filePath = path.join(PUBLIC_UPLOADS_DIR, safeName);
+
+  await fs.promises.writeFile(filePath, buffer);
+
+  return {
+    fileName: safeName,
+    url: `/uploads/${safeName}`,
   };
 }
 
@@ -60,17 +86,13 @@ export async function savePdfFile(buffer, fileName) {
 export async function getPdfBuffer(fileKey) {
   ensureStorageDir();
 
-  // SECURITY: Use path.basename to prevent "path traversal" attacks
-  // (stops hackers from using "../" to access other files on the server)
   const safeKey = path.basename(fileKey);
   const filePath = path.join(STORAGE_DIR, safeKey);
 
-  // Check if the file exists
   if (!fs.existsSync(filePath)) {
     return null;
   }
 
-  // Read and return the file data
   return fs.promises.readFile(filePath);
 }
 
@@ -87,7 +109,7 @@ export async function deletePdfFile(fileKey) {
     const filePath = path.join(STORAGE_DIR, safeKey);
 
     if (fs.existsSync(filePath)) {
-      await fs.promises.unlink(filePath); // unlink = delete the file
+      await fs.promises.unlink(filePath);
       return true;
     }
   } catch (err) {

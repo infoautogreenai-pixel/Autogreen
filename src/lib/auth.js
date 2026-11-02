@@ -88,12 +88,17 @@ export async function setAuthCookie(payload) {
   const token = signToken(payload);
   const cookieStore = await cookies();
 
+  // In localhost/dev or non-HTTPS, secure must be false so browsers don't reject the cookie over HTTP
+  const isHttps = process.env.NODE_ENV === 'production' &&
+                  Boolean(process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT || process.env.RENDER) &&
+                  !process.env.NEXT_PUBLIC_APP_URL?.includes('localhost');
+
   cookieStore.set(TOKEN_COOKIE_NAME, token, {
-    httpOnly: true,                                     // JavaScript can't read this cookie (security)
-    secure: process.env.NODE_ENV === 'production',      // Only send over HTTPS in production
-    sameSite: 'lax',                                    // Protects against CSRF attacks
-    maxAge: 7 * 24 * 60 * 60,                          // Cookie expires in 7 days (in seconds)
-    path: '/',                                          // Cookie is available on all pages
+    httpOnly: true,
+    secure: isHttps,
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60,
+    path: '/',
   });
 
   return token;

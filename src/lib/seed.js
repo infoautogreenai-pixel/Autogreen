@@ -15,10 +15,8 @@ import { createDemoCoursePdf } from './pdf-generator';
 // It creates:
 // 1. Platform settings (name, payment config, etc.)
 // 2. Discount coupons (WELCOME50, PRO20, MEGA50)
-// 3. Admin user account (admin@example.com)
-// 4. Student user account (student@example.com)
-// 5. Sample course guides with actual PDF files
-// 6. A demo purchase so the student can immediately read a course
+// 3. Admin user account (admin@autogreenai.com)
+// 4. Sample course guides with actual PDF files
 
 // ==========================================
 // Sample Course Data
@@ -357,7 +355,7 @@ export async function seedDatabase() {
     settings = await Settings.create({
       platformName: 'LearnForge PDF Academy',
       pointsEarnRate: 10,          // Users earn 10% of purchase price as points
-      pointsRedeemRate: 0.5,       // 100 points = ₹50 discount
+      pointsRedeemRate: 0.5,       // 100 points = â‚¹50 discount
       razorpayKeyId: 'rzp_test_mockKey123',
       razorpayKeySecret: 'rzp_test_mockSecret456',
       razorpayEnabled: true,
@@ -411,47 +409,27 @@ export async function seedDatabase() {
   }
 
   // ==========================================
-  // Step 3: Create Admin User
+  // Step 3: Create Admin User (if not exists)
   // ==========================================
-  let admin = await User.findOne({ email: 'admin@example.com' });
-  const adminPassHash = await hashPassword('admin123');
+  let admin = await User.findOne({ role: 'admin' });
+  const adminPassHash = await hashPassword('Autogreen@2026');
   if (!admin) {
     admin = await User.create({
-      name: 'Sameer Admin',
-      email: 'admin@example.com',
+      name: 'AutoGreen Admin',
+      email: 'admin@autogreenai.com',
       passwordHash: adminPassHash,
       role: 'admin',
-      points: 500,
+      points: 1000,
       pointsHistory: [
-        { type: 'earned', amount: 500, reason: 'Initial Admin Bonus', date: new Date() },
+        { type: 'earned', amount: 1000, reason: 'Initial Admin Bonus', date: new Date() },
       ],
       purchasedGuides: [],
     });
-    console.log('Created Demo Admin: admin@example.com (Password: admin123)');
+    console.log('Created Admin: admin@autogreenai.com');
   }
 
   // ==========================================
-  // Step 4: Create Student User
-  // ==========================================
-  let student = await User.findOne({ email: 'student@example.com' });
-  const studentPassHash = await hashPassword('student123');
-  if (!student) {
-    student = await User.create({
-      name: 'Alex Student',
-      email: 'student@example.com',
-      passwordHash: studentPassHash,
-      role: 'user',
-      points: 200,
-      pointsHistory: [
-        { type: 'earned', amount: 200, reason: 'Welcome Signup Bonus', date: new Date() },
-      ],
-      purchasedGuides: [],
-    });
-    console.log('Created Demo Student: student@example.com (Password: student123)');
-  }
-
-  // ==========================================
-  // Step 5: Create Course Guides & Generate PDFs
+  // Step 4: Create Course Guides & Generate PDFs
   // ==========================================
   const createdGuides = [];
   for (const course of sampleCoursesData) {
@@ -506,53 +484,6 @@ export async function seedDatabase() {
       await existingGuide.save();
     }
     createdGuides.push(existingGuide);
-  }
-
-  // ==========================================
-  // Step 6: Give Student Access to First Course (Demo Purchase)
-  // ==========================================
-  if (student && createdGuides.length > 0) {
-    const firstGuide = createdGuides[0];
-
-    // Check if student already has this guide
-    const isAlreadyPurchased = student.purchasedGuides.some(
-      (p) => p.guideId.toString() === firstGuide._id.toString()
-    );
-
-    if (!isAlreadyPurchased) {
-      // Create a demo order record
-      const order = await Order.create({
-        orderNumber: `ORD-${Date.now()}-DEMO`,
-        userId: student._id,
-        guideId: firstGuide._id,
-        guideTitle: firstGuide.title,
-        guideCover: firstGuide.coverImage,
-        amount: firstGuide.price,
-        originalPrice: firstGuide.originalPrice || firstGuide.price,
-        discountAmount: 0,
-        pointsRedeemed: 0,
-        pointsEarned: Math.round(firstGuide.price * 0.1),
-        paymentGateway: 'test',
-        paymentGatewayOrderId: 'TEST_DEMO_ORDER_1',
-        paymentGatewayPaymentId: 'TEST_DEMO_PAY_1',
-        status: 'success',
-        customerDetails: {
-          name: student.name,
-          email: student.email,
-        },
-      });
-
-      // Add the guide to student's purchased list
-      student.purchasedGuides.push({
-        guideId: firstGuide._id,
-        orderId: order._id,
-        purchasedAt: new Date(),
-        lastReadPage: 1,
-      });
-
-      await student.save();
-      console.log(`Enrolled demo student in: ${firstGuide.title}`);
-    }
   }
 
   console.log('--- Database Seeding Complete ---');

@@ -1,1331 +1,1528 @@
 'use client';
+
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Search, CheckCircle, Bot, Zap, Mic, Code, BookOpen, ChevronDown, Check, Compass, Briefcase, Terminal, Activity, Send, X } from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ArrowDown,
+  Check,
+  Minus,
+  ChevronDown,
+  Compass,
+  Package,
+  Workflow,
+  Bot,
+  AudioLines,
+  PenTool,
+  GraduationCap,
+  Megaphone,
+  Laptop,
+  Rocket,
+  Building2,
+  Landmark,
+} from 'lucide-react';
+
 export default function HomePage() {
-    const [guides, setGuides] = useState([]);
-    const [categories, setCategories] = useState(['All']);
-    const [selectedCategory, setSelectedCategory] = useState('All');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [loading, setLoading] = useState(true);
-    // Interactive Agent Tab State
-    const [activeAgentTab, setActiveAgentTab] = useState(0);
-    // FAQ Accordion State
-    const [openFaq, setOpenFaq] = useState(0);
-    // Newsletter State
-    const [emailSubscribed, setEmailSubscribed] = useState(false);
-    const [newsletterEmail, setNewsletterEmail] = useState('');
-    // Request a Demo Modal State
-    const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-    const [demoSubmitted, setDemoSubmitted] = useState(false);
-    const [demoForm, setDemoForm] = useState({ name: '', email: '', message: '' });
-    // Interactive Canvas Ref for constellation background
-    const canvasRef = useRef(null);
-    useEffect(() => {
-        // Particle constellation animation
-        const canvas = canvasRef.current;
-        if (!canvas)
-            return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx)
-            return;
-        let animationFrameId;
-        let width = (canvas.width = window.innerWidth);
-        let height = (canvas.height = window.innerHeight);
-        const handleResize = () => {
-            if (!canvas)
-                return;
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        };
-        window.addEventListener('resize', handleResize);
-        const particles = [];
-        for (let i = 0; i < 45; i++) {
-            particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.4,
-                vy: (Math.random() - 0.5) * 0.4,
-                radius: Math.random() * 1.8 + 1,
-                alpha: Math.random() * 0.5 + 0.2,
-            });
-        }
-        const render = () => {
-            ctx.clearRect(0, 0, width, height);
-            // Draw connections
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 130) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(16, 185, 129, ${0.15 * (1 - dist / 130)})`;
-                        ctx.lineWidth = 0.8;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            // Draw and move particles
-            for (const p of particles) {
-                p.x += p.vx;
-                p.y += p.vy;
-                if (p.x < 0)
-                    p.x = width;
-                if (p.x > width)
-                    p.x = 0;
-                if (p.y < 0)
-                    p.y = height;
-                if (p.y > height)
-                    p.y = 0;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(52, 211, 153, ${p.alpha})`;
-                ctx.fill();
-            }
-            animationFrameId = requestAnimationFrame(render);
-        };
-        render();
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            cancelAnimationFrame(animationFrameId);
-        };
-    }, []);
-    useEffect(() => {
-        async function fetchGuides() {
-            setLoading(true);
-            try {
-                const queryParams = new URLSearchParams();
-                if (selectedCategory !== 'All')
-                    queryParams.set('category', selectedCategory);
-                if (searchQuery)
-                    queryParams.set('search', searchQuery);
-                const res = await fetch(`/api/guides?${queryParams.toString()}`);
-                const data = await res.json();
-                if (data.success) {
-                    setGuides(data.guides || []);
-                    if (data.categories) {
-                        setCategories(data.categories);
-                    }
-                }
-            }
-            catch (err) {
-                console.error('Error fetching guides:', err);
-            }
-            finally {
-                setLoading(false);
-            }
-        }
-        const timer = setTimeout(() => {
-            fetchGuides();
-        }, 200);
-        return () => clearTimeout(timer);
-    }, [selectedCategory, searchQuery]);
-    // Ecosystem Pillars Data
-    const pillars = [
-        {
-            step: '01',
-            tag: 'Discover',
-            title: 'Find the right AI tools.',
-            desc: 'Curated AI tools for every profession and industry — filtered by use case, difficulty, and stack.',
-            icon: Compass,
-            gradient: 'from-emerald-500/20 to-teal-500/10',
-            actionText: 'Explore Directory',
-            link: '#resources'
-        },
-        {
-            step: '02',
-            tag: 'Kits',
-            title: 'Get ready-to-use AI systems.',
-            desc: 'Role-specific AI toolkits — tools, prompts, workflows and automations in one place.',
-            icon: Briefcase,
-            gradient: 'from-emerald-500/25 to-green-600/10',
-            actionText: 'View AI Kits',
-            link: '#kits'
-        },
-        {
-            step: '03',
-            tag: 'Automate',
-            title: 'Automate repetitive work.',
-            desc: 'Connect apps, data and AI so decisions and actions happen without you.',
-            icon: Zap,
-            gradient: 'from-emerald-500/20 to-cyan-600/10',
-            actionText: 'See Automations',
-            link: '#automate'
-        },
-        {
-            step: '04',
-            tag: 'Agents',
-            title: 'Build AI employees.',
-            desc: 'Specialised AI agents that research, sell, support and report alongside your team.',
-            icon: Bot,
-            gradient: 'from-emerald-500/20 to-lime-600/10',
-            actionText: 'Meet The Agents',
-            link: '#agents'
-        },
-        {
-            step: '05',
-            tag: 'Voice',
-            title: 'Deploy AI voice experiences.',
-            desc: 'Natural, conversational voice agents for sales, support, qualification, and booking.',
-            icon: Mic,
-            gradient: 'from-emerald-500/20 to-teal-600/10',
-            actionText: 'Explore Voice',
-            link: '#voice'
-        },
-        {
-            step: '06',
-            tag: 'Studio',
-            title: 'Build custom AI solutions.',
-            desc: 'Strategy, implementation and transformation — bespoke AI systems for your brand.',
-            icon: Code,
-            gradient: 'from-emerald-500/20 to-emerald-700/10',
-            actionText: 'Contact Studio',
-            link: 'mailto:contact@autogreen.ai'
-        }
-    ];
-    // Dynamic AI Marketer Kit Tiers Data (Synced with MongoDB Atlas & /api/kits)
-    const defaultKits = [
-        {
-            id: '6adc8def486c185f0a88bdd2',
-            guideId: '6adc8def486c185f0a88bdd2',
-            name: 'AI Marketer Starter',
-            badge: 'LEARN AI',
-            dotColor: 'emerald',
-            price: '₹99',
-            originalPrice: '₹299',
-            description: 'Discover what AI can do for your daily marketing work.',
-            features: [
-                '200+ AI tools',
-                '100+ prompts',
-                'Claude Skills',
-                'Beginner workflows',
-                'Claude walkthroughs',
-                'Notion Starter System',
-                'n8n introduction',
-                'AI Marketer Community'
-            ],
-            cta: 'Start with Starter →',
-            popular: false
-        },
-        {
-            id: '6adc8def486c185f0a88bdd5',
-            guideId: '6adc8def486c185f0a88bdd5',
-            name: 'AI Marketer Pro',
-            badge: 'EXECUTE WITH AI',
-            dotColor: 'amber',
-            price: '₹599',
-            originalPrice: '₹1,499',
-            description: 'Turn AI tools into repeatable marketing workflows.',
-            features: [
-                'Everything in Starter',
-                'Advanced AI tools',
-                'Advanced Claude Skills',
-                'Marketing workflows',
-                'n8n automation lab',
-                '10–20 automation workflows',
-                'Marketing OS',
-                'AI reporting system',
-                'AI audit system',
-                'Advanced research workflows'
-            ],
-            cta: 'Go Pro →',
-            popular: false
-        },
-        {
-            id: '6adc8def486c185f0a88bdd8',
-            guideId: '6adc8def486c185f0a88bdd8',
-            name: 'AI Marketer Expert',
-            badge: 'BUILD WITH AI',
-            topBadge: 'Most Powerful',
-            dotColor: 'rose',
-            price: '₹1,299',
-            originalPrice: '₹2,999',
-            description: 'Build your own AI marketing department.',
-            features: [
-                'Everything in Starter + Pro',
-                'AI employee builder',
-                'AI agents',
-                'Advanced n8n',
-                'AI Agency OS',
-                'AI freelancer system',
-                'AI marketing agency system',
-                'Custom workflow builder',
-                'Monetization systems',
-                'Expert community'
-            ],
-            cta: 'Become an AI Operator →',
-            popular: true
-        }
-    ];
+  // Interactive Accordion State for FAQ (12 questions)
+  const [openFaq, setOpenFaq] = useState(0);
 
-    const [kits, setKits] = useState(defaultKits);
+  // Newsletter Subscription State
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
 
-    // Fetch dynamic kits from database
-    useEffect(() => {
-        async function loadKits() {
-            try {
-                const res = await fetch('/api/kits');
-                const data = await res.json();
-                if (data.success && Array.isArray(data.tiers) && data.tiers.length > 0) {
-                    setKits(data.tiers);
-                }
-            } catch (err) {
-                console.error('Error fetching dynamic kits:', err);
-            }
+  // Dynamic live kit tiers from MongoDB
+  const [liveKits, setLiveKits] = useState(null);
+
+  useEffect(() => {
+    async function fetchLiveKits() {
+      try {
+        const res = await fetch('/api/kits');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.tiers) && data.tiers.length >= 3) {
+          setLiveKits(data.tiers);
         }
-        loadKits();
-    }, []);
-    // AI Agents Directory Data
-    const agents = [
-        {
-            name: 'AI Research Agent',
-            role: 'Market & Competitive Intelligence',
-            status: 'Autonomous Worker',
-            capabilities: [
-                'Scrapes competitor pricing, offerings and ads',
-                'Synthesizes industry whitepapers into 2-page briefs',
-                'Monitors social sentiment and emergent trends'
-            ],
-            sampleOutput: 'Identified 3 market gaps in B2B AI automation. Generated executive summary + 14 reference citations.'
-        },
-        {
-            name: 'AI Marketing Agent',
-            role: 'Multi-Channel Campaign Architect',
-            status: 'Autonomous Worker',
-            capabilities: [
-                'Drafts high-converting landing page copy and headlines',
-                'Schedules omnichannel social variations with hooks',
-                'Conducts A/B test analysis on CTR and conversion'
-            ],
-            sampleOutput: 'Generated 5 high-converting ad hooks with 9.2% estimated CTR increase over baseline.'
-        },
-        {
-            name: 'AI Support Agent',
-            role: '24/7 Context-Aware Customer Care',
-            status: 'Real-time Autonomous',
-            capabilities: [
-                'Instant answers grounded in company documentation',
-                'Processes ticket escalation with sentiment scoring',
-                'Integrates with Slack, Zendesk, and Intercom'
-            ],
-            sampleOutput: 'Resolved 84% of tier-1 customer inquiries instantly with a 98.7% satisfaction rating.'
-        },
-        {
-            name: 'AI Reporting Agent',
-            role: 'KPI & Revenue Data Synthesizer',
-            status: 'Scheduled Worker',
-            capabilities: [
-                'Extracts data from Stripe, GA4, and CRM systems',
-                'Translates tabular metrics into actionable narrative',
-                'Dispatches Monday morning executive briefs'
-            ],
-            sampleOutput: 'Weekly brief sent: CAC dropped 18%, MRR increased 12.4% driven by Kit Tier 2.'
-        },
-        {
-            name: 'AI Lead Qualification Agent',
-            role: 'High-Intent Prospect Scoring',
-            status: 'Autonomous Inbound',
-            capabilities: [
-                'Enriches company size, tech stack, and LinkedIn data',
-                'Interviews inbound visitors via conversational chat',
-                'Auto-books qualified meetings on sales calendars'
-            ],
-            sampleOutput: 'Qualified 42 enterprise leads this week and routed 18 direct calls to account executives.'
+      } catch (err) {
+        console.warn('Live kits fetch note:', err);
+      }
+    }
+    fetchLiveKits();
+  }, []);
+
+  const starterTier = liveKits?.find(
+    (k) =>
+      k.slug === 'ai-marketer-starter-kit' ||
+      k.id === '6adc8def486c185f0a88bdd2' ||
+      k.name?.toLowerCase().includes('starter')
+  );
+
+  const proTier = liveKits?.find(
+    (k) =>
+      k.slug === 'ai-marketer-pro-kit' ||
+      k.id === '6adc8def486c185f0a88bdd5' ||
+      k.name?.toLowerCase().includes('pro')
+  );
+
+  const expertTier = liveKits?.find(
+    (k) =>
+      k.slug === 'ai-marketer-expert-stack' ||
+      k.id === '6adc8def486c185f0a88bdd8' ||
+      k.name?.toLowerCase().includes('expert')
+  );
+
+  // Particle constellation background canvas ref
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    const particles = [];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        radius: Math.random() * 1.6 + 0.8,
+        alpha: Math.random() * 0.4 + 0.15,
+      });
+    }
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Connect nearby particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(16, 185, 129, ${0.12 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.8;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
         }
-    ];
-    // FAQ Data
-    const faqs = [
-        {
-            q: 'What is AutoGreen AI?',
-            a: 'AutoGreen AI is a global AI ecosystem. We help people and businesses discover the right AI tools, learn to use them, automate their work and build custom AI systems — from individual workflows to full AI employees.'
-        },
-        {
-            q: 'Who is AutoGreen AI for?',
-            a: 'AutoGreen is built for professionals, creators, agency owners, SMEs, and enterprise operators. If you work in modern business, AutoGreen helps you work faster, automate routine operations, and lead with AI.'
-        },
-        {
-            q: 'What is the AI Marketer Kit?',
-            a: 'A role-specific digital toolkit that turns marketers into AI operators. It combines Claude Skills, tested workflows, n8n automations, and AI employee templates across three progressive levels: Starter, Community, and Expert.'
-        },
-        {
-            q: 'Which AI tools and models are included?',
-            a: 'Our ecosystem encompasses top foundational models (Claude 3.5, OpenAI, Gemini) and specialised tools across copywriting, design, video, research, automation (n8n, Make), and voice AI.'
-        },
-        {
-            q: 'What are AI agents and AI employees?',
-            a: 'AI agents are autonomous software systems built to perform specialised work — researching, qualifying leads, drafting reports, and answering customer queries without constant manual intervention.'
-        },
-        {
-            q: 'Can businesses partner with AutoGreen Studio for custom systems?',
-            a: 'Yes. Through AutoGreen Automate, Agents, Voice, and Studio, we design and implement bespoke AI strategy, proprietary knowledge bases, and custom agents for organizations of any scale.'
-        },
-        {
-            q: 'How does digital access and DRM protection work?',
-            a: 'All guides and toolkits purchased on AutoGreen are delivered through our high-performance in-browser DRM reader. Content is encrypted, personalized with dynamic watermarks, and synchronized across your devices.'
-        }
-    ];
-    return (<div className="relative min-h-screen bg-[#FFFFFF] text-slate-900 selection:bg-emerald-500 selection:text-white overflow-hidden">
+      }
+
+      // Draw and move particles
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(52, 211, 153, ${p.alpha})`;
+        ctx.fill();
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    if (newsletterEmail.trim()) {
+      setNewsletterSubscribed(true);
+      setTimeout(() => setNewsletterSubscribed(false), 5000);
+      setNewsletterEmail('');
+    }
+  };
+
+  const toggleFaq = (index) => {
+    setOpenFaq(openFaq === index ? -1 : index);
+  };
+
+  const faqData = [
+    {
+      q: 'What is AutoGreen AI?',
+      a: 'AutoGreen AI is a global AI ecosystem. We help people and businesses discover the right AI tools, learn to use them, automate repetitive work, and build custom AI systems — from individual workflows to full AI employees.',
+    },
+    {
+      q: 'Who is AutoGreen AI for?',
+      a: 'AutoGreen is built for students, marketers, freelancers, founders, agencies, and enterprises looking to leverage artificial intelligence for productivity, automation, and business growth.',
+    },
+    {
+      q: 'What is the AI Marketer Kit?',
+      a: 'A comprehensive role-specific toolkit that turns marketers into AI operators. It combines Claude Skills, tested workflows, n8n automations, and AI employee templates across three progressive levels: Starter, Pro, and Expert.',
+    },
+    {
+      q: 'Which AI tools are included?',
+      a: 'Our ecosystem encompasses top foundational models (Claude 3.5, OpenAI, Gemini) and specialised tools across copywriting, design, video, research, automation (n8n, Make), and voice AI.',
+    },
+    {
+      q: 'Do I need technical knowledge?',
+      a: 'No prior coding experience is required. The Starter and Pro tiers include step-by-step walkthroughs, prompt templates, and pre-built workflows designed for non-technical operators.',
+    },
+    {
+      q: 'What is an AI Skill?',
+      a: 'An AI Skill is a specialised instruction framework and template packaged for LLMs (like Claude or GPT) that enables them to execute complex, professional-grade tasks autonomously.',
+    },
+    {
+      q: 'What are AI agents?',
+      a: 'AI agents are autonomous software systems built to perform specialized work — researching, qualifying leads, drafting reports, and answering customer queries without constant manual intervention.',
+    },
+    {
+      q: 'What is n8n?',
+      a: 'n8n is a powerful, flexible node-based workflow automation tool that lets you connect hundreds of apps, databases, and AI models to run automated pipelines without writing code.',
+    },
+    {
+      q: 'Can businesses work with AutoGreen?',
+      a: 'Yes. We partner with companies to audit their workflows, identify automation opportunities, and deploy custom AI solutions tailored to their industry and operational stack.',
+    },
+    {
+      q: 'Can AutoGreen build custom AI systems?',
+      a: 'Yes. Through AutoGreen Studio, we design and implement bespoke AI strategy, proprietary knowledge bases, voice agents, and custom AI employees for organizations of any scale.',
+    },
+    {
+      q: 'Is the content updated as AI changes?',
+      a: 'Yes. The ecosystem is continuously updated with new AI models, revised prompt architectures, updated automation templates, and weekly community insights.',
+    },
+    {
+      q: 'Which countries can use AutoGreen?',
+      a: 'AutoGreen AI is a global platform accessible worldwide with multi-currency checkout support, instant digital access, and global community membership.',
+    },
+  ];
+
+  const marqueeItems = [
+    'Different Businesses. One Green.',
+    'AI is the new green.',
+    'Discover AI.',
+    'Build with AI.',
+    'Automate the work.',
+    'Create AI employees.',
+    'Grow with intelligence.',
+  ];
+
+  return (
+    <div className="min-h-screen bg-background text-foreground antialiased selection:bg-emerald-500 selection:text-white">
       
-      {/* Interactive Constellation Background Canvas */}
-      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-20"/>
+      {/* ========================================================================= */}
+      {/* 1. HERO SECTION                                                           */}
+      {/* ========================================================================= */}
+      <section
+        className="relative flex min-h-[100svh] items-center overflow-hidden pt-20"
+        data-testid="hero-section"
+      >
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 h-full w-full pointer-events-none"
+          aria-hidden="true"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(6,78,59,0.42),_transparent_65%)]" />
 
-      {/* Ambient Soft Emerald Glow Elements */}
-      <div className="ambient-glow -top-32 left-1/2 -translate-x-1/2 h-[550px] w-[550px] bg-emerald-100/40"/>
-      <div className="ambient-glow top-[900px] -left-40 h-[450px] w-[450px] bg-teal-100/30"/>
-      <div className="ambient-glow top-[2200px] -right-40 h-[550px] w-[550px] bg-emerald-100/30"/>
+        <div className="relative mx-auto w-full max-w-7xl px-6 pt-24 pb-24 md:px-12">
+          {/* Eyebrow */}
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+              AutoGreen AI — a global AI ecosystem
+            </p>
+          </div>
+
+          {/* Main Headline */}
+          <h1 className="mt-8 font-heading text-[clamp(3.2rem,8.5vw,7rem)] font-light leading-[0.98] tracking-tighter text-white">
+            <span className="block overflow-hidden pb-[0.08em]">
+              <span className="block">AI is the</span>
+            </span>
+            <span className="block overflow-hidden pb-[0.08em]">
+              <span className="block">
+                <span className="text-gradient-green font-normal">new green.</span>
+              </span>
+            </span>
+          </h1>
+
+          {/* Description Paragraphs */}
+          <div className="mt-9 max-w-2xl space-y-4">
+            <p className="text-base leading-relaxed text-slate-300 sm:text-lg">
+              Thousands of businesses. Thousands of professions. Thousands of ways to work.{' '}
+              <span className="text-white font-medium">One intelligence connects them all.</span>
+            </p>
+            <p className="text-sm leading-relaxed text-slate-400">
+              AutoGreen AI helps people and businesses discover, use, automate and build with artificial intelligence.
+            </p>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="mt-10 flex flex-wrap gap-4">
+            <Link href="/#kits" data-discover="true">
+              <button
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm shadow group h-13 rounded-full bg-emerald-600 px-8 py-4 font-medium text-white transition-all duration-300 hover:bg-emerald-500 hover:scale-[1.02] active:scale-[0.98]"
+                data-testid="hero-explore-kits-cta"
+              >
+                <span>Explore AI Kits</span>
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
+            </Link>
+
+            <Link href="/about" data-discover="true">
+              <button
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm border shadow-sm h-13 rounded-full border-white/15 px-8 py-4 font-medium text-slate-200 transition-all duration-300 hover:border-emerald-500/50 hover:text-emerald-300 hover:bg-white/5"
+                data-testid="hero-explore-autogreen-cta"
+              >
+                <span>Explore AutoGreen AI</span>
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <ArrowDown className="h-5 w-5 text-emerald-400/60" />
+        </div>
+      </section>
 
       {/* ========================================================================= */}
-      {/* 1. HERO SECTION (2-COLUMN GRID)                                          */}
+      {/* 2. EDITORIAL MARQUEE                                                      */}
       {/* ========================================================================= */}
-      {/* ========================================================================= */}
-      {/* 1. HERO SECTION (2-COLUMN GRID - MATCHING REFERENCE DESIGN)              */}
-      {/* ========================================================================= */}
-      <section className="relative z-10 bg-[#FAFAFC] text-slate-900 border-b border-slate-200 py-[35px] sm:pt-14 sm:pb-16 lg:pt-16 lg:pb-20 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
-            
-            {/* GRID 1 (LEFT): Text, Heading, URL Input & Contact */}
-            <div className="lg:col-span-7 space-y-6 sm:space-y-7 text-left z-10">
-              
-              {/* Eyebrow */}
-              <div>
-                <span className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-[#1B1D3A] font-sans">
-                  WELCOME TO AUTOGREEN
-                </span>
-              </div>
+      <div
+        className="overflow-hidden border-y border-white/5 py-5 select-none bg-[#030712]/90"
+        data-testid="editorial-marquee"
+      >
+        <div className="marquee-track flex items-center whitespace-nowrap">
+          <div className="flex items-center shrink-0" aria-hidden="false">
+            {marqueeItems.map((item, idx) => (
+              <span
+                key={idx}
+                className="flex items-center font-mono text-xs uppercase tracking-[0.35em] text-emerald-200/40"
+              >
+                <span className="px-10">{item}</span>
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500/40" />
+              </span>
+            ))}
+          </div>
+          <div className="flex items-center shrink-0" aria-hidden="true">
+            {marqueeItems.map((item, idx) => (
+              <span
+                key={`dup-${idx}`}
+                className="flex items-center font-mono text-xs uppercase tracking-[0.35em] text-emerald-200/40"
+              >
+                <span className="px-10">{item}</span>
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500/40" />
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
 
-              {/* Main Headline matching reference design */}
-              <h1 className="text-4xl sm:text-6xl lg:text-[68px] font-extrabold tracking-tight leading-[1.08] text-[#1B1D3A]">
-                <span className="text-[#E94D4D]">Digital</span> <br />
-                <span>Marketing</span> <br />
-                <span className="relative inline-block border-[1.5px] border-[#4A90E2] bg-[#F0F6FF]/70 rounded-md px-3.5 py-0.5 mt-1 select-none text-[#1B1D3A]">
-                  Success
-                  {/* 8 resize/drag handles matching reference graphic */}
-                  <span className="absolute -top-1.5 -left-1.5 w-2.5 h-2.5 bg-white border-[1.5px] border-[#4A90E2] rounded-[1px]"></span>
-                  <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white border-[1.5px] border-[#4A90E2] rounded-[1px]"></span>
-                  <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 bg-white border-[1.5px] border-[#4A90E2] rounded-[1px]"></span>
-                  <span className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-2.5 h-2.5 bg-white border-[1.5px] border-[#4A90E2] rounded-[1px]"></span>
-                  <span className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-2.5 h-2.5 bg-white border-[1.5px] border-[#4A90E2] rounded-[1px]"></span>
-                  <span className="absolute -bottom-1.5 -left-1.5 w-2.5 h-2.5 bg-white border-[1.5px] border-[#4A90E2] rounded-[1px]"></span>
-                  <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white border-[1.5px] border-[#4A90E2] rounded-[1px]"></span>
-                  <span className="absolute -bottom-1.5 -right-1.5 w-2.5 h-2.5 bg-white border-[1.5px] border-[#4A90E2] rounded-[1px]"></span>
-                </span>
-              </h1>
+      {/* ========================================================================= */}
+      {/* 3. MANIFESTO / PHILOSOPHY SECTION                                         */}
+      {/* ========================================================================= */}
+      <section className="py-24 md:py-36" data-testid="manifesto-section" id="philosophy">
+        <div className="mx-auto max-w-7xl px-6 md:px-12">
+          {/* Eyebrow */}
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+              Our philosophy
+            </p>
+          </div>
 
-              {/* Subheading Description */}
-              <p className="text-black text-sm sm:text-base lg:text-lg max-w-lg leading-relaxed font-normal">
-                Ensuring the best return on investment for your bespoke SEO campaign requirement.
+          {/* Heading */}
+          <div className="mt-6">
+            <h2 className="max-w-3xl font-heading text-4xl font-light leading-[1.05] tracking-tight sm:text-5xl text-white">
+              Different Businesses. <span className="text-gradient-green">One Green.</span>
+            </h2>
+          </div>
+
+          {/* 3 Columns */}
+          <div className="mt-16 grid gap-12 md:mt-24 md:grid-cols-3 md:gap-10">
+            <div className="border-t border-white/10 pt-8">
+              <span className="font-mono text-sm text-emerald-400/80 font-semibold">01</span>
+              <h3 className="mt-4 font-heading text-2xl font-normal tracking-tight text-white">
+                Every plant is different.
+              </h3>
+              <p className="mt-4 text-sm leading-relaxed text-slate-400">
+                The world is full of plants, trees and grasses. They vary in shape, size, purpose and growth — yet one colour connects them all.
               </p>
+            </div>
 
-              {/* Interactive URL / Search Box + Analyze Button */}
-              <div className="pt-1">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    window.location.href = '#kits';
-                  }}
-                  className="flex flex-col sm:flex-row items-stretch sm:items-center p-1.5 rounded-2xl bg-white border border-slate-200/90 shadow-lg shadow-slate-200/50 max-w-lg transition-all focus-within:border-[#4A90E2] focus-within:ring-2 focus-within:ring-[#4A90E2]/20"
+            <div className="border-t border-white/10 pt-8">
+              <span className="font-mono text-sm text-emerald-400/80 font-semibold">02</span>
+              <h3 className="mt-4 font-heading text-2xl font-normal tracking-tight text-white">
+                Businesses are no different.
+              </h3>
+              <p className="mt-4 text-sm leading-relaxed text-slate-400">
+                Different industries. Different people. Different challenges. Different goals. Thousands of ways to work, side by side.
+              </p>
+            </div>
+
+            <div className="border-t border-white/10 pt-8">
+              <span className="font-mono text-sm text-emerald-400/80 font-semibold">03</span>
+              <h3 className="mt-4 font-heading text-2xl font-normal tracking-tight text-white">
+                AI is the common intelligence.
+              </h3>
+              <p className="mt-4 text-sm leading-relaxed text-slate-400">
+                One technology now connects the modern world of work. AutoGreen AI makes that intelligence easier to discover, understand and apply.
+              </p>
+            </div>
+          </div>
+
+          {/* Growth Chain Pills */}
+          <div className="mt-20 flex flex-wrap items-center gap-x-4 gap-y-3" data-testid="growth-chain">
+            <span className="flex items-center gap-4">
+              <span className="rounded-full border px-5 py-2.5 font-mono text-xs uppercase tracking-[0.2em] border-white/10 text-slate-400 bg-white/5">
+                Nature
+              </span>
+              <ArrowRight className="h-4 w-4 text-emerald-500/50" />
+            </span>
+
+            <span className="flex items-center gap-4">
+              <span className="rounded-full border px-5 py-2.5 font-mono text-xs uppercase tracking-[0.2em] border-white/10 text-slate-400 bg-white/5">
+                People
+              </span>
+              <ArrowRight className="h-4 w-4 text-emerald-500/50" />
+            </span>
+
+            <span className="flex items-center gap-4">
+              <span className="rounded-full border px-5 py-2.5 font-mono text-xs uppercase tracking-[0.2em] border-white/10 text-slate-400 bg-white/5">
+                Businesses
+              </span>
+              <ArrowRight className="h-4 w-4 text-emerald-500/50" />
+            </span>
+
+            <span className="flex items-center gap-4">
+              <span className="rounded-full border px-5 py-2.5 font-mono text-xs uppercase tracking-[0.2em] border-emerald-500/50 bg-emerald-500/10 text-emerald-300 font-semibold shadow-sm shadow-emerald-500/20">
+                AI
+              </span>
+              <ArrowRight className="h-4 w-4 text-emerald-500/50" />
+            </span>
+
+            <span className="flex items-center gap-4">
+              <span className="rounded-full border px-5 py-2.5 font-mono text-xs uppercase tracking-[0.2em] border-white/10 text-slate-400 bg-white/5">
+                Growth
+              </span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 4. THE ECOSYSTEM SECTION                                                  */}
+      {/* ========================================================================= */}
+      <section
+        id="discover"
+        className="border-t border-white/5 py-24 md:py-32"
+        data-testid="ecosystem-section"
+      >
+        <div className="mx-auto max-w-7xl px-6 md:px-12">
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+                The ecosystem
+              </p>
+              <h2 className="mt-6 font-heading text-4xl font-light tracking-tight sm:text-5xl text-white">
+                One ecosystem. <span className="text-gradient-green">Endless possibilities.</span>
+              </h2>
+            </div>
+            <p className="max-w-sm text-sm leading-relaxed text-slate-400">
+              Six branches of the same idea — different ways to discover, use and build with AI.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Card 1: Discover */}
+            <div className="h-full">
+              <Link
+                className="group flex h-full flex-col rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color,background-color] duration-500 hover:-translate-y-1.5 hover:border-emerald-500/30 hover:bg-[#0A1512]"
+                data-testid="ecosystem-card-discover"
+                href="/#resources"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 transition-colors duration-500 group-hover:bg-emerald-500/20">
+                  <Compass className="h-5 w-5 text-emerald-400" />
+                </span>
+                <h3 className="mt-6 font-heading text-xl font-medium tracking-tight text-white">Discover</h3>
+                <p className="mt-1 text-sm text-emerald-200/70 font-medium">Find the right AI tools.</p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">
+                  Curated AI tools for every profession and industry — filtered by use case, difficulty and price.
+                </p>
+                <span className="mt-6 flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
+                  Learn more
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+              </Link>
+            </div>
+
+            {/* Card 2: Kits */}
+            <div className="h-full">
+              <Link
+                className="group flex h-full flex-col rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color,background-color] duration-500 hover:-translate-y-1.5 hover:border-emerald-500/30 hover:bg-[#0A1512]"
+                data-testid="ecosystem-card-kits"
+                href="/#kits"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 transition-colors duration-500 group-hover:bg-emerald-500/20">
+                  <Package className="h-5 w-5 text-emerald-400" />
+                </span>
+                <h3 className="mt-6 font-heading text-xl font-medium tracking-tight text-white">Kits</h3>
+                <p className="mt-1 text-sm text-emerald-200/70 font-medium">Get ready-to-use AI systems.</p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">
+                  Role-specific AI toolkits — tools, prompts, workflows and automations in one place.
+                </p>
+                <span className="mt-6 flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
+                  Learn more
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+              </Link>
+            </div>
+
+            {/* Card 3: Automate */}
+            <div className="h-full">
+              <Link
+                className="group flex h-full flex-col rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color,background-color] duration-500 hover:-translate-y-1.5 hover:border-emerald-500/30 hover:bg-[#0A1512]"
+                data-testid="ecosystem-card-automate"
+                href="/#automate"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 transition-colors duration-500 group-hover:bg-emerald-500/20">
+                  <Workflow className="h-5 w-5 text-emerald-400" />
+                </span>
+                <h3 className="mt-6 font-heading text-xl font-medium tracking-tight text-white">Automate</h3>
+                <p className="mt-1 text-sm text-emerald-200/70 font-medium">Automate repetitive work.</p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">
+                  Connect apps, data and AI so decisions and actions happen without you.
+                </p>
+                <span className="mt-6 flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
+                  Learn more
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+              </Link>
+            </div>
+
+            {/* Card 4: Agents */}
+            <div className="h-full">
+              <Link
+                className="group flex h-full flex-col rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color,background-color] duration-500 hover:-translate-y-1.5 hover:border-emerald-500/30 hover:bg-[#0A1512]"
+                data-testid="ecosystem-card-agents"
+                href="/#agents"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 transition-colors duration-500 group-hover:bg-emerald-500/20">
+                  <Bot className="h-5 w-5 text-emerald-400" />
+                </span>
+                <h3 className="mt-6 font-heading text-xl font-medium tracking-tight text-white">Agents</h3>
+                <p className="mt-1 text-sm text-emerald-200/70 font-medium">Build AI employees.</p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">
+                  Specialised AI agents that research, sell, support and report alongside your team.
+                </p>
+                <span className="mt-6 flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
+                  Learn more
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+              </Link>
+            </div>
+
+            {/* Card 5: Voice */}
+            <div className="h-full">
+              <Link
+                className="group flex h-full flex-col rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color,background-color] duration-500 hover:-translate-y-1.5 hover:border-emerald-500/30 hover:bg-[#0A1512]"
+                data-testid="ecosystem-card-voice"
+                href="/#voice"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 transition-colors duration-500 group-hover:bg-emerald-500/20">
+                  <AudioLines className="h-5 w-5 text-emerald-400" />
+                </span>
+                <h3 className="mt-6 font-heading text-xl font-medium tracking-tight text-white">Voice</h3>
+                <p className="mt-1 text-sm text-emerald-200/70 font-medium">Deploy AI voice experiences.</p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">
+                  Voice agents that qualify leads, book appointments and answer customers.
+                </p>
+                <span className="mt-6 flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
+                  Learn more
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+              </Link>
+            </div>
+
+            {/* Card 6: Studio */}
+            <div className="h-full">
+              <Link
+                className="group flex h-full flex-col rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color,background-color] duration-500 hover:-translate-y-1.5 hover:border-emerald-500/30 hover:bg-[#0A1512]"
+                data-testid="ecosystem-card-studio"
+                href="/#studio"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 transition-colors duration-500 group-hover:bg-emerald-500/20">
+                  <PenTool className="h-5 w-5 text-emerald-400" />
+                </span>
+                <h3 className="mt-6 font-heading text-xl font-medium tracking-tight text-white">Studio</h3>
+                <p className="mt-1 text-sm text-emerald-200/70 font-medium">Build custom AI solutions.</p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">
+                  Strategy, implementation and transformation — bespoke AI systems for your brand.
+                </p>
+                <span className="mt-6 flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
+                  Learn more
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 5. FEATURED PRODUCT SECTION                                               */}
+      {/* ========================================================================= */}
+      <section className="border-t border-white/5 py-24 md:py-32" data-testid="featured-product-section">
+        <div className="mx-auto grid max-w-7xl items-center gap-14 px-6 md:grid-cols-2 md:px-12">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+              Featured product
+            </p>
+            <h2 className="mt-6 font-heading text-4xl font-light tracking-tight sm:text-5xl text-white">
+              The AI Marketer Kit
+            </h2>
+            <p className="mt-4 font-heading text-xl text-emerald-200/90 font-medium">
+              From AI user to AI marketing operator.
+            </p>
+            <p className="mt-6 text-base leading-relaxed text-slate-400">
+              Stop collecting AI tools. Start using AI like a marketer. The AI Marketer Kit gives you the tools, prompts, AI employees, workflows, automations and systems to work faster and build better marketing processes.
+            </p>
+            <div className="mt-9">
+              <Link href="/#kits" data-discover="true">
+                <button
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm shadow group h-13 rounded-full bg-emerald-600 px-8 py-4 font-medium text-white transition-all duration-300 hover:bg-emerald-500 hover:scale-[1.02]"
+                  data-testid="featured-product-cta"
                 >
-                  <input
-                    type="text"
-                    placeholder="http://yoursite.com"
-                    className="px-4 py-3 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none flex-1 font-sans"
-                  />
-                  <button
-                    type="submit"
-                    className="px-6 py-3.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md shrink-0 mt-2 sm:mt-0"
-                  >
-                    Analyze Your Site
-                  </button>
-                </form>
+                  <span>Explore the AI Marketer Kit</span>
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </button>
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <div className="drift-slow relative overflow-hidden rounded-3xl border border-white/10">
+              <img
+                alt="Abstract green organic form — the AutoGreen AI Marketer Kit"
+                className="aspect-[4/3] w-full object-cover"
+                loading="lazy"
+                src="https://images.pexels.com/photos/25630339/pexels-photo-25630339.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+              />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,_rgba(16,185,129,0.15),_rgba(2,6,23,0.55))]" />
+              <div className="absolute bottom-5 left-5 rounded-full border border-white/10 bg-[#030712]/70 px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] text-emerald-200 backdrop-blur-md">
+                Starter · Pro · Expert
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              {/* Contact Info Badge */}
-              <div className="pt-2 flex flex-wrap items-center gap-6 text-xs text-black">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-[#FFF1F2] border border-[#FECDD3] text-[#E94D4D]">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="font-extrabold text-[#1B1D3A] text-base block tracking-tight">800-123-4567</span>
-                    <span className="text-black text-[11px] font-semibold uppercase tracking-wider">INFO@COMPANY.COM</span>
-                  </div>
-                </div>
+      {/* ========================================================================= */}
+      {/* 6. PRICING & TIERS LADDER (#kits)                                         */}
+      {/* ========================================================================= */}
+      <section
+        id="kits"
+        className="border-t border-white/5 py-24 md:py-32"
+        data-testid="pricing-section"
+      >
+        <div className="mx-auto max-w-7xl px-6 md:px-12">
+          {/* Header */}
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+              The AI Marketer Kit
+            </p>
+            <h2 className="mt-6 max-w-3xl font-heading text-4xl font-light tracking-tight sm:text-5xl text-white">
+              Three levels. <span className="text-gradient-green">One AI-powered career path.</span>
+            </h2>
+            <p className="mt-5 font-mono text-sm text-slate-400">
+              Learn AI <span className="text-emerald-400">→</span> Execute with AI{' '}
+              <span className="text-emerald-400">→</span> Build with AI
+            </p>
+          </div>
 
-                <div className="flex items-center gap-3">
-                  <Link
-                    href="#kits"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline"
-                  >
-                    <span>Explore AI Kits</span>
-                    <span>→</span>
+          {/* Pricing Ladder 3-Column Cards */}
+          <div className="mt-16">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3" data-testid="pricing-ladder">
+              
+              {/* Tier 1: Starter */}
+              <div className="h-full">
+                <div
+                  className="relative flex h-full flex-col rounded-3xl border p-8 transition-[transform,border-color,box-shadow] duration-500 hover:-translate-y-1.5 border-white/5 bg-[#070e17] hover:border-white/15"
+                  data-testid="pricing-card-starter"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="pulse-dot h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: 'rgb(52, 211, 153)' }}
+                    />
+                    <span className="font-mono text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">
+                      {starterTier?.badge || 'Learn AI'}
+                    </span>
+                  </div>
+
+                  <h3 className="mt-5 font-heading text-2xl font-medium tracking-tight text-white">
+                    {starterTier?.name || 'AI Marketer Starter'}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    {starterTier?.description || 'Discover what AI can do for your daily marketing work.'}
+                  </p>
+
+                  <div className="mt-7 flex items-baseline gap-2">
+                    <span className="font-heading text-5xl font-light tracking-tight text-white" data-testid="pricing-starter-price">
+                      {starterTier ? starterTier.price : '₹99'}
+                    </span>
+                    <span className="text-sm text-slate-400">one-time</span>
+                  </div>
+
+                  <ul className="mt-8 flex-1 space-y-3">
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>200+ AI tools</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>100+ prompts</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Claude Skills</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Beginner workflows</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Claude walkthroughs</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Notion Starter System</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>n8n introduction</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>AI Marketer Community</span>
+                    </li>
+                  </ul>
+
+                  <Link href={starterTier ? `/checkout?guideId=${starterTier.id}&tier=starter` : '/checkout?tier=starter'} className="mt-8 block">
+                    <button
+                      className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap text-sm shadow px-4 py-3 group h-12 rounded-full font-medium transition-all duration-300 border border-white/10 bg-white/5 text-white hover:border-emerald-500/40 hover:bg-emerald-500/10"
+                      data-testid="pricing-starter-cta"
+                    >
+                      <span>{starterTier?.cta || 'Start with Starter'}</span>
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </button>
                   </Link>
                 </div>
               </div>
 
-            </div>
-
-            {/* GRID 2 (RIGHT): Hero Image, Faint ERIO watermark & Top-Right CTA Card */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
-              
-              {/* Subtle background text watermark "ERIO" matching reference design */}
-              <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-[120px] font-black text-slate-200/50 select-none pointer-events-none tracking-widest hidden lg:block font-heading -rotate-90 origin-center">
-                ERIO
-              </div>
-
-              {/* Top-Right Floating "Start growing" Dark Card (from reference design) */}
-              <div className="absolute -top-4 right-0 sm:right-2 z-20 hidden sm:block bg-[#091527] p-6 shadow-2xl text-left w-52 rounded-none">
-                <p className="text-sm font-bold text-white leading-snug">
-                  Start growing<br />with AutoGreen.
-                </p>
-                <Link
-                  href="/login"
-                  className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-slate-200 hover:text-white uppercase tracking-wider hover:underline"
-                >
-                  <span>SIGN IN</span>
-                  <span>→</span>
-                </Link>
-              </div>
-
-              {/* Main Image from D:\sameer sir ai tols\public\images\herobanner homepage.png */}
-              <div className="relative z-10 w-full max-w-md sm:max-w-lg lg:max-w-none flex justify-center">
-                <img
-                  src="/images/herobanner_homepage.png"
-                  alt="AutoGreen Digital Marketing Success"
-                  className="w-full max-w-[520px] h-auto object-contain"
-                />
-              </div>
-
-              {/* Subtle "SCROLL |" Indicator */}
-              <div className="absolute -right-6 bottom-8 hidden xl:flex items-center gap-2 -rotate-90 origin-right text-[10px] uppercase font-mono tracking-widest text-slate-400">
-                <span className="font-bold">SCROLL</span>
-                <span className="w-6 h-0.5 bg-[#1B1D3A] inline-block"></span>
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Hero Ecosystem Stats Row */}
-          <div className="mt-12 sm:mt-16 border-t border-slate-200 pt-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto px-4 text-center">
-              <div>
-                <p className="text-3xl font-extrabold text-[#1B1D3A] tracking-tight">450+</p>
-                <p className="text-xs uppercase tracking-wider font-mono text-emerald-600 font-bold mt-1">Curated AI Tools</p>
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-[#1B1D3A] tracking-tight">12,000+</p>
-                <p className="text-xs uppercase tracking-wider font-mono text-emerald-600 font-bold mt-1">Active AI Operators</p>
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-[#1B1D3A] tracking-tight">85,000+</p>
-                <p className="text-xs uppercase tracking-wider font-mono text-emerald-600 font-bold mt-1">Automations Deployed</p>
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-[#1B1D3A] tracking-tight">99.4%</p>
-                <p className="text-xs uppercase tracking-wider font-mono text-emerald-600 font-bold mt-1">Workflow Reliability</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 2. WHY CHOOSE US / BOOST TRAFFIC SECTION (WHITE BACKGROUND, BLACK TEXT)   */}
-      {/* ========================================================================= */}
-      <section id="discover" className="relative z-10 bg-white text-slate-900 py-[35px] sm:py-20 lg:py-28 border-b border-slate-200 overflow-hidden">
-        
-        {/* Subtle World Map Silhouette Watermark in Background */}
-        <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-full lg:w-1/2 h-full opacity-40 select-none flex items-center justify-center">
-          <svg className="w-full h-auto max-w-xl text-slate-100 fill-current" viewBox="0 0 1000 500">
-            <path d="M150,150 Q180,120 220,150 T290,140 T320,200 T270,260 T180,280 T130,230 Z" />
-            <path d="M480,130 Q540,110 590,140 T650,220 T580,310 T490,260 T460,180 Z" />
-            <path d="M720,160 Q780,120 850,170 T890,260 T820,330 T730,270 T700,210 Z" />
-            <path d="M220,320 Q260,300 290,340 T270,420 T210,400 Z" />
-            <path d="M780,350 Q830,330 870,370 T840,430 T780,410 Z" />
-          </svg>
-        </div>
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-            
-            {/* LEFT: 2x2 Grid of Feature Cards */}
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
-              
-              {/* Card 1: Orange/Amber Sphere */}
-              <div className="rounded-2xl bg-white border border-slate-100 p-6 sm:p-7 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start gap-4 text-left group">
-                <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 shadow-md shadow-orange-500/20 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
-                  {/* Gloss highlight */}
-                  <div className="absolute top-1.5 left-2 w-4 h-2 rounded-full bg-white/45 blur-[0.5px]"></div>
-                  <div className="absolute bottom-1 right-2 w-3 h-3 rounded-full bg-black/15"></div>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-[#111827] leading-snug">
-                  Discover, Explore the product
-                </h3>
-              </div>
-
-              {/* Card 2: Blue/Cyan Sphere */}
-              <div className="rounded-2xl bg-white border border-slate-100 p-6 sm:p-7 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start gap-4 text-left group">
-                <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 shadow-md shadow-blue-500/20 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
-                  <div className="absolute top-1.5 left-2 w-4 h-2 rounded-full bg-white/45 blur-[0.5px]"></div>
-                  <div className="absolute bottom-1 right-2 w-3 h-3 rounded-full bg-black/15"></div>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-[#111827] leading-snug">
-                  Art Direction & Brand Strategy
-                </h3>
-              </div>
-
-              {/* Card 3: Lime/Green Sphere */}
-              <div className="rounded-2xl bg-white border border-slate-100 p-6 sm:p-7 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start gap-4 text-left group">
-                <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-lime-300 via-emerald-500 to-green-600 shadow-md shadow-emerald-500/20 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
-                  <div className="absolute top-1.5 left-2 w-4 h-2 rounded-full bg-white/45 blur-[0.5px]"></div>
-                  <div className="absolute bottom-1 right-2 w-3 h-3 rounded-full bg-black/15"></div>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-[#111827] leading-snug">
-                  Product UX, Design & Development
-                </h3>
-              </div>
-
-              {/* Card 4: Purple/Violet Sphere */}
-              <div className="rounded-2xl bg-white border border-slate-100 p-6 sm:p-7 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start gap-4 text-left group">
-                <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-fuchsia-400 via-purple-500 to-indigo-700 shadow-md shadow-purple-500/20 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
-                  <div className="absolute top-1.5 left-2 w-4 h-2 rounded-full bg-white/45 blur-[0.5px]"></div>
-                  <div className="absolute bottom-1 right-2 w-3 h-3 rounded-full bg-black/15"></div>
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-[#111827] leading-snug">
-                  Marketing Strategy & SEO Campaigns
-                </h3>
-              </div>
-
-            </div>
-
-            {/* RIGHT: Why Choose Us Content & CTA */}
-            <div className="lg:col-span-6 space-y-6 text-left">
-              
-              {/* Eyebrow */}
-              <div>
-                <span className="text-xs font-extrabold uppercase tracking-widest text-[#1B1D3A]">
-                  WHY CHOOSE US
-                </span>
-              </div>
-
-              {/* Headline */}
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111827] tracking-tight leading-tight">
-                Boosts Your Website Traffic!
-              </h2>
-
-              {/* Description */}
-              <p className="text-black text-sm sm:text-base leading-relaxed max-w-xl font-normal">
-                We are passionate about our work. Our designers stay ahead of the curve to provide engaging and user-friendly website designs to make your business stand out. Our developers are committed to maintaining the highest web standards so that your site will withstand the test of time. We care about your business, which is why we work with you.
-              </p>
-
-              {/* Discover More Button */}
-              <div className="pt-2">
-                <Link
-                  href="#kits"
-                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-md border border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-bold uppercase tracking-wider transition-all shadow-sm group"
-                >
-                  <span>Discover More</span>
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 3. FEATURED AI KITS & TIERS (#kits)                                       */}
-      {/* ========================================================================= */}
-      <section id="kits" className="relative z-10 py-[45px] sm:py-24 bg-[#080d1a] border-t border-slate-800 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-3">
-              <Briefcase className="h-3.5 w-3.5"/>
-              <span>DIGITAL TOOLKITS & WORKFLOWS</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-              Start with the <span className="text-emerald-400">AI Marketer Kit</span>
-            </h2>
-            <p className="mt-4 text-slate-400 text-sm sm:text-base leading-relaxed">
-              A role-specific digital toolkit that turns marketers into AI operators. It combines Claude Skills,
-              workflows, n8n automations, and AI employees across three progressive levels.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            {kits.map((tier) => {
-              const isExpert = Boolean(tier.popular || tier.topBadge || tier.name?.toLowerCase().includes('expert'));
-              const dotColorClass =
-                tier.dotColor === 'amber'
-                  ? 'bg-amber-400'
-                  : tier.dotColor === 'rose'
-                  ? 'bg-rose-500'
-                  : 'bg-emerald-400';
-
-              return (
+              {/* Tier 2: Pro */}
+              <div className="h-full">
                 <div
-                  key={tier.name || tier.id}
-                  className={`relative rounded-3xl p-7 sm:p-8 flex flex-col justify-between transition-all duration-300 bg-[#0c101d] ${
-                    isExpert
-                      ? 'border-2 border-emerald-500 shadow-2xl shadow-emerald-500/10 lg:-translate-y-2'
-                      : 'border border-slate-800/80 hover:border-slate-700 shadow-xl'
-                  }`}
+                  className="relative flex h-full flex-col rounded-3xl border p-8 transition-[transform,border-color,box-shadow] duration-500 hover:-translate-y-1.5 border-white/5 bg-[#070e17] hover:border-white/15"
+                  data-testid="pricing-card-pro"
                 >
-                  {/* Top Floating Badge for Most Powerful */}
-                  {tier.topBadge && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-emerald-400 text-slate-950 text-xs font-bold tracking-wide shadow-md shadow-emerald-500/25">
-                      {tier.topBadge}
-                    </div>
-                  )}
-
-                  <div>
-                    {/* Tier Tag Line with Colored Dot */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`inline-block w-2.5 h-2.5 rounded-full ${dotColorClass}`} />
-                      <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400">
-                        {tier.badge}
-                      </span>
-                    </div>
-
-                    {/* Title & Subtitle */}
-                    <h3 className="text-2xl font-bold text-white tracking-tight">{tier.name}</h3>
-                    <p className="text-xs sm:text-sm text-slate-400 mt-2 min-h-[38px] leading-relaxed">
-                      {tier.description}
-                    </p>
-
-                    {/* Price in ₹ */}
-                    <div className="mt-6 mb-7 flex items-baseline gap-2">
-                      <span className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
-                        {tier.price}
-                      </span>
-                      <span className="text-xs sm:text-sm text-slate-400 font-medium">one-time</span>
-                    </div>
-
-                    {/* Checklist Features */}
-                    <div className="space-y-3.5 mb-8">
-                      {tier.features.map((feat, idx) => (
-                        <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-[13px] text-slate-300">
-                          <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                          <span>{feat}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Action CTA Button */}
-                  <div className="pt-6 border-t border-slate-800/80">
-                    <Link
-                      href={`/checkout?guideId=${tier.guideId || tier.id}&tier=${encodeURIComponent(
-                        tier.name
-                      )}&price=${encodeURIComponent(tier.price)}`}
-                      className={`w-full py-3.5 px-6 rounded-full text-center text-sm flex items-center justify-center gap-2 transition-all ${
-                        isExpert
-                          ? 'bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold shadow-lg shadow-emerald-500/25 active:scale-[0.99]'
-                          : 'bg-[#121827] hover:bg-slate-800 text-white font-semibold border border-slate-700/80 shadow-md active:scale-[0.99]'
-                      }`}
-                    >
-                      <span>{tier.cta}</span>
-                      <ArrowRight
-                        className={`h-4 w-4 ${isExpert ? 'text-slate-950' : 'text-slate-300'}`}
-                      />
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* ========================================================================= */}
-      {/* 4. AI AGENTS DIRECTORY & INTERACTIVE SHOWCASE (#agents)                  */}
-      {/* ========================================================================= */}
-      <section id="agents" className="relative z-10 py-[35px] sm:py-24 bg-white border-t border-slate-200 text-slate-900">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-3">
-              <Bot className="h-3.5 w-3.5"/>
-              <span>AUTONOMOUS AI WORKFORCE</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#111827] tracking-tight">
-              Build <span className="text-emerald-600">AI employees.</span>
-            </h2>
-            <p className="mt-4 text-black text-base">
-              Specialised AI agents that research, sell, support and report alongside your team.
-              Explore our production-ready agent blueprints.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            {/* Agent Selector List */}
-            <div className="lg:col-span-5 space-y-3">
-              {agents.map((agent, index) => (<button key={agent.name} onClick={() => setActiveAgentTab(index)} className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between ${activeAgentTab === index
-                ? 'border-emerald-600 bg-emerald-50/80 text-slate-900 shadow-sm'
-                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${activeAgentTab === index
-                ? 'bg-emerald-600 text-white'
-                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
-                      <Bot className="h-5 w-5"/>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">{agent.name}</p>
-                      <p className="text-xs text-black">{agent.role}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-100/80 text-emerald-800 border border-emerald-200">
-                    Live
-                  </span>
-                </button>))}
-            </div>
-
-            {/* Agent Live Terminal / Execution Card */}
-            <div className="lg:col-span-7">
-              <div className="rounded-3xl border border-slate-800 bg-[#0F172A] p-8 shadow-2xl relative overflow-hidden text-white">
-                <div className="flex items-center justify-between pb-6 border-b border-slate-800 mb-6">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-3 w-3 rounded-full bg-rose-500/80"/>
-                    <div className="h-3 w-3 rounded-full bg-amber-500/80"/>
-                    <div className="h-3 w-3 rounded-full bg-emerald-500/80"/>
-                    <span className="text-xs font-mono text-slate-400 ml-2">autogreen-agent-sandbox v2.4</span>
+                    <span
+                      className="pulse-dot h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: 'rgb(251, 191, 36)' }}
+                    />
+                    <span className="font-mono text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">
+                      {proTier?.badge || 'Execute with AI'}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
-                    <Activity className="h-3.5 w-3.5 animate-pulse"/>
-                    <span>STATUS: {agents[activeAgentTab].status.toUpperCase()}</span>
-                  </div>
-                </div>
 
-                <div>
-                  <h4 className="text-xl font-bold text-white mb-1">
-                    {agents[activeAgentTab].name}
-                  </h4>
-                  <p className="text-xs text-emerald-400 font-mono mb-6">
-                    ROLE: {agents[activeAgentTab].role}
+                  <h3 className="mt-5 font-heading text-2xl font-medium tracking-tight text-white">
+                    {proTier?.name || 'AI Marketer Pro'}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    {proTier?.description || 'Turn AI tools into repeatable marketing workflows.'}
                   </p>
 
-                  <div className="space-y-4 mb-6">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      Core Autonomous Capabilities:
-                    </p>
-                    {agents[activeAgentTab].capabilities.map((cap, i) => (<div key={i} className="flex items-start gap-2 text-xs text-slate-300">
-                        <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5"/>
-                        <span>{cap}</span>
-                      </div>))}
+                  <div className="mt-7 flex items-baseline gap-2">
+                    <span className="font-heading text-5xl font-light tracking-tight text-white" data-testid="pricing-pro-price">
+                      {proTier ? proTier.price : '₹599'}
+                    </span>
+                    <span className="text-sm text-slate-400">one-time</span>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-black/50 border border-slate-800 mb-6">
-                    <div className="flex items-center gap-2 text-[11px] font-mono text-emerald-400 mb-1">
-                      <Terminal className="h-3.5 w-3.5"/>
-                      <span>Latest Autonomous Dispatch:</span>
-                    </div>
-                    <p className="text-xs text-slate-300 font-mono italic">
-                      "{agents[activeAgentTab].sampleOutput}"
-                    </p>
+                  <ul className="mt-8 flex-1 space-y-3">
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300 font-medium">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Everything in Starter</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Advanced AI tools</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Advanced Claude Skills</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Marketing workflows</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>n8n automation lab</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>10–20 automation workflows</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Marketing OS</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>AI reporting system</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>AI audit system</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Advanced research workflows</span>
+                    </li>
+                  </ul>
+
+                  <Link href={proTier ? `/checkout?guideId=${proTier.id}&tier=pro` : '/checkout?tier=pro'} className="mt-8 block">
+                    <button
+                      className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap text-sm shadow px-4 py-3 group h-12 rounded-full font-medium transition-all duration-300 border border-white/10 bg-white/5 text-white hover:border-emerald-500/40 hover:bg-emerald-500/10"
+                      data-testid="pricing-pro-cta"
+                    >
+                      <span>{proTier?.cta || 'Go Pro'}</span>
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Tier 3: Expert (Featured) */}
+              <div className="h-full">
+                <div
+                  className="relative flex h-full flex-col rounded-3xl border p-8 transition-[transform,border-color,box-shadow] duration-500 hover:-translate-y-1.5 glow-card border-emerald-400/30 bg-[#07130F] shadow-[0_24px_80px_rgba(16,185,129,0.14)] md:-mt-5"
+                  data-testid="pricing-card-expert"
+                >
+                  <span
+                    className="absolute -top-3.5 left-8 rounded-full bg-emerald-500 px-3.5 py-1 text-xs font-semibold text-emerald-950"
+                    data-testid="pricing-expert-badge"
+                  >
+                    {expertTier?.topBadge || 'Most Powerful'}
+                  </span>
+
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="pulse-dot h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: 'rgb(248, 113, 113)' }}
+                    />
+                    <span className="font-mono text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">
+                      {expertTier?.badge || 'Build with AI'}
+                    </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Link href="/#kits" className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-500 transition-all flex items-center gap-2 shadow-sm">
-                      <span>Deploy This Agent Template</span>
-                      <ArrowRight className="h-3.5 w-3.5"/>
-                    </Link>
-                    <a href="mailto:contact@autogreen.ai" className="px-5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-medium text-xs hover:bg-slate-700 transition-all">
-                      Request Custom Training
-                    </a>
+                  <h3 className="mt-5 font-heading text-2xl font-medium tracking-tight text-white">
+                    {expertTier?.name || 'AI Marketer Expert'}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    {expertTier?.description || 'Build your own AI marketing department.'}
+                  </p>
+
+                  <div className="mt-7 flex items-baseline gap-2">
+                    <span className="font-heading text-5xl font-light tracking-tight text-white" data-testid="pricing-expert-price">
+                      {expertTier ? expertTier.price : '₹1,299'}
+                    </span>
+                    <span className="text-sm text-slate-400">one-time</span>
                   </div>
+
+                  <ul className="mt-8 flex-1 space-y-3">
+                    <li className="flex items-start gap-2.5 text-sm text-slate-200 font-medium">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Everything in Starter + Pro</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>AI employee builder</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>AI agents</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Advanced n8n</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>AI Agency OS</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>AI freelancer system</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>AI marketing agency system</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Custom workflow builder</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Monetization systems</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-slate-300">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                      <span>Expert community</span>
+                    </li>
+                  </ul>
+
+                  <Link href={expertTier ? `/checkout?guideId=${expertTier.id}&tier=expert` : '/checkout?tier=expert'} className="mt-8 block">
+                    <button
+                      className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap text-sm shadow px-4 py-3 group h-12 rounded-full font-medium transition-all duration-300 bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+                      data-testid="pricing-expert-cta"
+                    >
+                      <span>{expertTier?.cta || 'Become an AI Operator'}</span>
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </button>
+                  </Link>
                 </div>
               </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 5. AUTOMATION & VOICE AI CAPABILITIES (#automate & #voice)                */}
-      {/* ========================================================================= */}
-      <section id="automate" className="relative z-10 py-[35px] sm:py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-4">
-                <Zap className="h-3.5 w-3.5"/>
-                <span>INTELLIGENT WORKFLOW ENGINE</span>
-              </div>
-
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111827] tracking-tight leading-tight">
-                Automate repetitive work. <br />
-                <span className="text-emerald-600">Connect apps, data and AI.</span>
-              </h2>
-
-              <p className="mt-4 text-black text-sm sm:text-base leading-relaxed">
-                Connect your business tools, databases, and AI models so decisions and actions occur without friction.
-                From automated client onboarding to multi-step research reports, AutoGreen gives you battle-tested n8n
-                and webhook pipelines.
-              </p>
-
-              <div className="mt-8 space-y-3">
-                <div className="flex items-center gap-3 text-sm text-black">
-                  <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</div>
-                  <span>Trigger from any webhook, form, CRM or database event</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-black">
-                  <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">2</div>
-                  <span>Process context through Claude 3.5 Sonnet / OpenAI with strict guardrails</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-black">
-                  <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">3</div>
-                  <span>Dispatch formatted outputs to Slack, Gmail, Google Sheets or your custom API</span>
-                </div>
-              </div>
-
-              <div className="mt-8 flex items-center gap-4">
-                <Link href="#kits" className="px-6 py-3 rounded-full bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-500 transition-all flex items-center gap-2 shadow-sm">
-                  <span>Get Ready Automations</span>
-                  <ArrowRight className="h-3.5 w-3.5"/>
-                </Link>
-              </div>
-            </div>
-
-            {/* Voice AI Card (#voice) */}
-            <div id="voice" className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
-                  <Mic className="h-6 w-6"/>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-[#111827]">Deploy AI Voice Experiences</h3>
-                  <p className="text-xs text-emerald-700 font-mono">Ultra-low latency conversational agents</p>
-                </div>
-              </div>
-
-              <p className="text-xs text-black leading-relaxed mb-6">
-                Deliver human-like, real-time voice interactions across inbound calls, outbound qualification, and customer support.
-                AutoGreen Voice connects telephony with LLMs in under 450ms.
-              </p>
-
-              <div className="space-y-2.5 p-4 rounded-2xl bg-slate-50 border border-slate-200 mb-6">
-                <div className="flex items-center justify-between text-xs text-black">
-                  <span>Voice Latency</span>
-                  <span className="font-mono text-emerald-700 font-bold">&lt; 450ms</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-black">
-                  <span>Supported Accents & Languages</span>
-                  <span className="font-mono text-emerald-700 font-bold">38+</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-black">
-                  <span>Calendar & CRM Integration</span>
-                  <span className="font-mono text-emerald-700 font-bold">Google, Cal.com, HubSpot</span>
-                </div>
-              </div>
-
-              <Link href="mailto:contact@autogreen.ai" className="w-full py-3 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold text-xs flex items-center justify-center gap-2 transition-all">
-                <span>Consult On Voice Implementation</span>
-                <ArrowRight className="h-3.5 w-3.5"/>
-              </Link>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* ========================================================================= */}
-      {/* 6. CURATED AI GUIDES & E-BOOKS CATALOG (#resources)                       */}
-      {/* ========================================================================= */}
-      <section id="resources" className="relative z-10 py-[35px] sm:py-24 bg-white border-t border-slate-200 text-slate-900">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-3">
-                <BookOpen className="h-3.5 w-3.5"/>
-                <span>DRM SECURED DIGITAL GUIDES</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111827] tracking-tight">
-                Curated AI Technical Guides
-              </h2>
-              <p className="mt-2 text-black text-sm max-w-xl">
-                Read in-depth manuals, developer architecture blueprints, and business playbooks
-                directly in our cloud DRM reader.
-              </p>
-            </div>
-
-            {/* Real-time Search Input */}
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"/>
-              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search guides, tools, agents..." className="w-full pl-10 pr-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600"/>
             </div>
           </div>
 
-          {/* Category Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
-            {categories.map((cat) => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${selectedCategory === cat
-                ? 'bg-emerald-600 text-white font-bold shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200'}`}>
-                {cat}
-              </button>))}
-          </div>
+          {/* Compare Table */}
+          <div className="mt-20">
+            <h3 className="mb-8 font-heading text-2xl font-normal tracking-tight text-white">
+              Compare the kits
+            </h3>
 
-          {/* Guides Grid */}
-          {loading ? (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((n) => (<div key={n} className="h-80 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse"/>))}
-            </div>) : guides.length > 0 ? (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {guides.map((guide) => (<div key={guide._id || guide.slug} className="group rounded-2xl border border-slate-200 bg-white overflow-hidden flex flex-col justify-between hover:border-emerald-300 hover:shadow-xl transition-all duration-300">
-                  <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                    <img src={guide.coverImage || '/placeholder-cover.jpg'} alt={guide.title} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => {
-                    e.target.style.display = 'none';
-                }}/>
-                    <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 rounded-md bg-white/90 backdrop-blur-md border border-slate-200 text-[10px] font-mono font-semibold text-emerald-700 shadow-xs">
-                        {guide.category}
+            <div className="overflow-x-auto rounded-3xl border border-white/5 bg-[#070e17]" data-testid="comparison-table">
+              <table className="w-full min-w-[560px] text-left">
+                <thead>
+                  <tr className="border-b border-white/5">
+                    <th className="p-5 font-mono text-xs uppercase tracking-[0.2em] text-slate-400">
+                      What&apos;s inside
+                    </th>
+                    <th className="p-5 text-center">
+                      <span className="font-heading text-base font-medium text-white">Starter</span>
+                      <span className="mt-1 block font-mono text-xs font-normal text-emerald-400">
+                        {starterTier ? starterTier.price : '₹99'}
                       </span>
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition-colors line-clamp-2">
-                        {guide.title}
-                      </h3>
-                      <p className="mt-2 text-xs text-black line-clamp-2">
-                        {guide.shortDescription}
-                      </p>
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-lg font-extrabold text-[#111827]">₹{guide.price}</span>
-                        {guide.originalPrice && (<span className="text-xs text-slate-400 line-through">₹{guide.originalPrice}</span>)}
-                      </div>
-
-                      <Link href={`/guides/${guide.slug}`} className="px-4 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold hover:bg-emerald-600 hover:text-white transition-all">
-                        Read Guide
-                      </Link>
-                    </div>
-                  </div>
-                </div>))}
-            </div>) : (<div className="text-center py-16 rounded-2xl border border-dashed border-slate-300 bg-slate-50">
-              <BookOpen className="h-10 w-10 text-emerald-600 mx-auto mb-3"/>
-              <p className="text-sm font-semibold text-slate-900">No guides matching your criteria</p>
-              <p className="text-xs text-black mt-1">Try resetting the category filter or search query</p>
-              <button onClick={() => {
-                setSelectedCategory('All');
-                setSearchQuery('');
-            }} className="mt-4 px-4 py-1.5 rounded-full bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-500 transition-colors">
-                Reset Filters
-              </button>
-            </div>)}
-
+                    </th>
+                    <th className="p-5 text-center">
+                      <span className="font-heading text-base font-medium text-white">Pro</span>
+                      <span className="mt-1 block font-mono text-xs font-normal text-emerald-400">
+                        {proTier ? proTier.price : '₹599'}
+                      </span>
+                    </th>
+                    <th className="p-5 text-center">
+                      <span className="font-heading text-base font-medium text-white">Expert</span>
+                      <span className="mt-1 block font-mono text-xs font-normal text-emerald-400">
+                        {expertTier ? expertTier.price : '₹1,299'}
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-white/[0.03]">
+                    <td className="p-5 text-sm text-slate-200">AI Tools</td>
+                    <td className="p-5 text-center text-sm text-slate-400">200+</td>
+                    <td className="p-5 text-center text-sm text-slate-400">200+ Advanced</td>
+                    <td className="p-5 text-center text-sm text-slate-400">200+ Advanced</td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03] bg-white/[0.02]">
+                    <td className="p-5 text-sm text-slate-200">Prompt Library</td>
+                    <td className="p-5 text-center text-sm text-slate-400">100+</td>
+                    <td className="p-5 text-center text-sm text-slate-400">100+</td>
+                    <td className="p-5 text-center text-sm text-slate-400">100+</td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03]">
+                    <td className="p-5 text-sm text-slate-200">Claude Skills</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Starter</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Advanced</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Advanced</td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03] bg-white/[0.02]">
+                    <td className="p-5 text-sm text-slate-200">AI Employees</td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03]">
+                    <td className="p-5 text-sm text-slate-200">Marketing Workflows</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Beginner</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Advanced</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Advanced</td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03] bg-white/[0.02]">
+                    <td className="p-5 text-sm text-slate-200">n8n Automation</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Introduction</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Automation lab</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Advanced n8n</td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03]">
+                    <td className="p-5 text-sm text-slate-200">Notion System</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Starter System</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Marketing OS</td>
+                    <td className="p-5 text-center text-sm text-slate-400">Agency OS</td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03] bg-white/[0.02]">
+                    <td className="p-5 text-sm text-slate-200">Reporting</td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03]">
+                    <td className="p-5 text-sm text-slate-200">AI Audits</td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03] bg-white/[0.02]">
+                    <td className="p-5 text-sm text-slate-200">AI Agents</td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03]">
+                    <td className="p-5 text-sm text-slate-200">Agency Systems</td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03] bg-white/[0.02]">
+                    <td className="p-5 text-sm text-slate-200">Monetization</td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center text-slate-500"><Minus className="mx-auto h-4 w-4" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                  </tr>
+                  <tr className="border-b border-white/[0.03]">
+                    <td className="p-5 text-sm text-slate-200">Community</td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                    <td className="p-5 text-center"><Check className="mx-auto h-4 w-4 text-emerald-400" /></td>
+                    <td className="p-5 text-center text-sm text-slate-400">Expert circle</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 7. PHILOSOPHY & WHY US                                                   */}
+      {/* 7. WHY SECTION                                                            */}
       {/* ========================================================================= */}
-      <section className="relative z-10 py-[35px] sm:py-24 bg-[#F8FAFC] border-t border-slate-200 text-slate-900">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#111827] tracking-tight">
-              We separate useful AI <br />
-              <span className="text-emerald-600">from AI noise.</span>
+      <section className="border-t border-white/5 py-24 md:py-32" data-testid="why-section">
+        <div className="mx-auto max-w-7xl px-6 md:px-12">
+          <div>
+            <h2 className="max-w-3xl font-heading text-4xl font-light leading-[1.08] tracking-tight sm:text-5xl text-white">
+              AI is moving fast. You shouldn&apos;t have to{' '}
+              <span className="text-gradient-green">figure it out alone.</span>
             </h2>
-            <p className="mt-4 text-black text-base">
-              AI changes constantly. AutoGreen evolves with it. We engineer pragmatic systems that drive
-              verifiable productivity rather than superficial hype.
+          </div>
+
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Card 1 */}
+            <div className="h-full">
+              <div
+                className="h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="why-card-0"
+              >
+                <span className="font-mono text-xs text-emerald-400/80 font-semibold">01</span>
+                <h3 className="mt-4 font-heading text-xl font-medium tracking-tight text-white">Curated</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                  We separate useful AI from AI noise.
+                </p>
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div className="h-full">
+              <div
+                className="h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="why-card-1"
+              >
+                <span className="font-mono text-xs text-emerald-400/80 font-semibold">02</span>
+                <h3 className="mt-4 font-heading text-xl font-medium tracking-tight text-white">Practical</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                  Everything is designed around real work.
+                </p>
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="h-full">
+              <div
+                className="h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="why-card-2"
+              >
+                <span className="font-mono text-xs text-emerald-400/80 font-semibold">03</span>
+                <h3 className="mt-4 font-heading text-xl font-medium tracking-tight text-white">Connected</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                  Tools, workflows and systems work together.
+                </p>
+              </div>
+            </div>
+
+            {/* Card 4 */}
+            <div className="h-full">
+              <div
+                className="h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="why-card-3"
+              >
+                <span className="font-mono text-xs text-emerald-400/80 font-semibold">04</span>
+                <h3 className="mt-4 font-heading text-xl font-medium tracking-tight text-white">
+                  Continuously evolving
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                  AI changes constantly. AutoGreen evolves with it.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10">
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-400">
+              Not another AI tools directory —{' '}
+              <span className="text-white font-medium">an AI intelligence ecosystem</span>, built to take you from discovery to transformation.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 rounded-2xl border border-slate-200 bg-white text-left shadow-sm hover:shadow-md transition-shadow">
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-mono font-bold text-sm mb-4 border border-emerald-200">
-                01
-              </div>
-              <h4 className="text-base font-bold text-slate-900 mb-2">Find the right AI tools</h4>
-              <p className="text-xs text-black leading-relaxed">
-                Filter through thousands of AI products to uncover the select few that generate immediate ROI for your role.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border border-slate-200 bg-white text-left shadow-sm hover:shadow-md transition-shadow">
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-mono font-bold text-sm mb-4 border border-emerald-200">
-                02
-              </div>
-              <h4 className="text-base font-bold text-slate-900 mb-2">Create AI employees</h4>
-              <p className="text-xs text-black leading-relaxed">
-                Package tasks into autonomous agents that conduct research, resolve support, and publish content without supervision.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border border-slate-200 bg-white text-left shadow-sm hover:shadow-md transition-shadow">
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-mono font-bold text-sm mb-4 border border-emerald-200">
-                03
-              </div>
-              <h4 className="text-base font-bold text-slate-900 mb-2">Automate workflows</h4>
-              <p className="text-xs text-black leading-relaxed">
-                Wire up APIs, webhooks, and n8n scripts so multi-step operational chains execute seamlessly around the clock.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl border border-slate-200 bg-white text-left shadow-sm hover:shadow-md transition-shadow">
-              <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-mono font-bold text-sm mb-4 border border-emerald-200">
-                04
-              </div>
-              <h4 className="text-base font-bold text-slate-900 mb-2">Become future-ready</h4>
-              <p className="text-xs text-black leading-relaxed">
-                Transition from manual operator to strategic orchestrator of intelligent systems across modern business.
-              </p>
-            </div>
-          </div>
-
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 8. FREQUENTLY ASKED QUESTIONS (Accordion)                                */}
+      {/* 8. HOW IT WORKS SECTION                                                   */}
       {/* ========================================================================= */}
-      <section className="relative z-10 py-[35px] sm:py-24 bg-white border-t border-slate-200 text-slate-900">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center mb-16">
-            <p className="text-xs font-mono uppercase tracking-widest text-emerald-700 font-bold mb-2">Answers</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111827] tracking-tight">
-              Frequently Asked Questions
-            </h2>
-            <p className="mt-2 text-black text-sm">
-              Everything you need to know about AutoGreen AI, the kits, automations, and DRM ecosystem.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {faqs.map((faq, index) => {
-            const isOpen = openFaq === index;
-            return (<div key={index} className="rounded-2xl border border-slate-200 bg-slate-50/70 overflow-hidden transition-colors hover:border-slate-300">
-                  <button onClick={() => setOpenFaq(isOpen ? null : index)} className="w-full p-6 text-left flex items-center justify-between gap-4 text-slate-900 font-semibold text-sm sm:text-base hover:text-emerald-700 transition-colors">
-                    <span>{faq.q}</span>
-                    <ChevronDown className={`h-4 w-4 text-emerald-600 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}/>
-                  </button>
-
-                  {isOpen && (<div className="px-6 pb-6 text-xs sm:text-sm text-black leading-relaxed border-t border-slate-200/80 bg-white pt-4">
-                      {faq.a}
-                    </div>)}
-                </div>);
-        })}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 9. NEWSLETTER & ECOSYSTEM BANNER                                          */}
-      {/* ========================================================================= */}
-      <section className="relative z-10 py-[35px] sm:py-20 bg-gradient-to-b from-[#F8FAFC] to-white border-t border-slate-200 text-slate-900">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-          
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-mono font-semibold text-emerald-800 mb-6">
-            <span>WEEKLY BRIEFING</span>
-          </div>
-
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-[#111827] tracking-tight">
-            Practical AI, straight to your inbox.
-          </h2>
-
-          <p className="mt-4 text-black text-sm sm:text-base max-w-xl mx-auto">
-            Different Businesses. One Green. Join 12,000+ engineers, marketers and founders building with AI.
+      <section
+        id="automate"
+        className="border-t border-white/5 py-24 md:py-32"
+        data-testid="how-it-works-section"
+      >
+        <div className="mx-auto max-w-7xl px-6 md:px-12">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+            How it works
           </p>
 
-          <div className="mt-8 max-w-md mx-auto">
-            {emailSubscribed ? (<div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-600"/>
-                <span>You are on the list! Welcome to AutoGreen AI.</span>
-              </div>) : (<form onSubmit={(e) => {
-                e.preventDefault();
-                if (newsletterEmail)
-                    setEmailSubscribed(true);
-            }} className="flex items-center gap-2 p-1.5 rounded-full bg-white border border-slate-300 shadow-md focus-within:border-emerald-600 transition-all">
-                <input type="email" required value={newsletterEmail} onChange={(e) => setNewsletterEmail(e.target.value)} placeholder="Enter your work email address..." className="w-full bg-transparent px-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none"/>
-                <button type="submit" className="px-5 py-2.5 rounded-full bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-500 transition-all shrink-0 flex items-center gap-1.5 shadow-xs">
-                  <span>Subscribe</span>
-                  <Send className="h-3.5 w-3.5"/>
-                </button>
-              </form>)}
-            <p className="text-[11px] text-black mt-3">No spam. Only high-signal workflows, agent blueprints, and tool teardowns.</p>
-          </div>
+          <div className="mt-12 grid gap-10 md:grid-cols-4">
+            <div>
+              <span className="font-heading text-6xl font-light text-emerald-500/20">01</span>
+              <h3 className="mt-4 flex items-center gap-2 font-heading text-xl font-medium tracking-tight text-white">
+                <span>Discover</span>
+                <ArrowRight className="h-4 w-4 text-emerald-500/50" />
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                Find the right AI tools and capabilities.
+              </p>
+            </div>
 
+            <div>
+              <span className="font-heading text-6xl font-light text-emerald-500/20">02</span>
+              <h3 className="mt-4 flex items-center gap-2 font-heading text-xl font-medium tracking-tight text-white">
+                <span>Learn</span>
+                <ArrowRight className="h-4 w-4 text-emerald-500/50" />
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                Understand how to use them.
+              </p>
+            </div>
+
+            <div>
+              <span className="font-heading text-6xl font-light text-emerald-500/20">03</span>
+              <h3 className="mt-4 flex items-center gap-2 font-heading text-xl font-medium tracking-tight text-white">
+                <span>Build</span>
+                <ArrowRight className="h-4 w-4 text-emerald-500/50" />
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                Create workflows, automations and AI employees.
+              </p>
+            </div>
+
+            <div>
+              <span className="font-heading text-6xl font-light text-emerald-500/20">04</span>
+              <h3 className="mt-4 flex items-center gap-2 font-heading text-xl font-medium tracking-tight text-white">
+                <span>Grow</span>
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                Use AI to improve productivity, business and opportunities.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 10. NEED MORE INFORMATION? / REQUEST A DEMO CTA BANNER (ABOVE FOOTER)     */}
+      {/* 9. AUDIENCE SECTION                                                       */}
       {/* ========================================================================= */}
-      <section className="relative z-10 py-[35px] sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="relative rounded-[36px] bg-gradient-to-r from-[#0082ff] via-[#006beb] to-[#0057d9] overflow-hidden shadow-2xl">
-          
-          {/* Subtle geometric polygon triangle background */}
-          <div className="absolute inset-0 pointer-events-none opacity-20">
-            <svg className="w-full h-full object-cover" viewBox="0 0 1200 400" preserveAspectRatio="none" fill="none">
-              <polygon points="0,0 200,400 400,0" fill="white" opacity="0.1" />
-              <polygon points="200,400 400,0 600,400" fill="white" opacity="0.15" />
-              <polygon points="400,0 600,400 800,0" fill="white" opacity="0.08" />
-              <polygon points="600,400 800,0 1000,400" fill="white" opacity="0.12" />
-              <polygon points="800,0 1000,400 1200,0" fill="white" opacity="0.1" />
-              <polygon points="100,0 300,250 500,0" fill="white" opacity="0.07" />
-              <polygon points="700,200 900,400 1100,200" fill="white" opacity="0.1" />
-            </svg>
+      <section
+        id="agents"
+        className="border-t border-white/5 py-24 md:py-32"
+        data-testid="audience-section"
+      >
+        <div className="mx-auto max-w-7xl px-6 md:px-12">
+          <div className="grid items-end gap-10 md:grid-cols-2">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+                Who it&apos;s for
+              </p>
+              <h2 className="mt-6 font-heading text-4xl font-light tracking-tight sm:text-5xl text-white">
+                Who is AutoGreen for?
+              </h2>
+            </div>
+
+            <div className="relative overflow-hidden rounded-3xl border border-white/10">
+              <img
+                alt="A team working together with AI in a modern workspace"
+                className="aspect-[16/8] w-full object-cover"
+                loading="lazy"
+                src="https://images.pexels.com/photos/7212946/pexels-photo-7212946.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#030712]/80 to-transparent" />
+            </div>
           </div>
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between min-h-[360px] lg:min-h-[400px]">
-            
-            {/* Left Content */}
-            <div className="w-full lg:w-7/12 py-10 sm:py-14 lg:py-16 px-6 sm:px-12 lg:px-16 flex flex-col justify-center text-left">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-white tracking-tight leading-tight">
-                Need more information?
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {/* 1. Students */}
+            <div className="h-full">
+              <div
+                className="group h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="audience-card-0"
+              >
+                <GraduationCap className="h-5 w-5 text-emerald-400" />
+                <h3 className="mt-5 font-heading text-lg font-medium tracking-tight text-white">
+                  For Students
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  Learn AI and become future-ready.
+                </p>
+              </div>
+            </div>
+
+            {/* 2. Marketers */}
+            <div className="h-full">
+              <div
+                className="group h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="audience-card-1"
+              >
+                <Megaphone className="h-5 w-5 text-emerald-400" />
+                <h3 className="mt-5 font-heading text-lg font-medium tracking-tight text-white">
+                  For Marketers
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  Create more and work faster.
+                </p>
+              </div>
+            </div>
+
+            {/* 3. Freelancers */}
+            <div className="h-full">
+              <div
+                className="group h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="audience-card-2"
+              >
+                <Laptop className="h-5 w-5 text-emerald-400" />
+                <h3 className="mt-5 font-heading text-lg font-medium tracking-tight text-white">
+                  For Freelancers
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  Deliver more without increasing workload.
+                </p>
+              </div>
+            </div>
+
+            {/* 4. Founders */}
+            <div className="h-full">
+              <div
+                className="group h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="audience-card-3"
+              >
+                <Rocket className="h-5 w-5 text-emerald-400" />
+                <h3 className="mt-5 font-heading text-lg font-medium tracking-tight text-white">
+                  For Founders
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  Build leverage into your business.
+                </p>
+              </div>
+            </div>
+
+            {/* 5. Agencies */}
+            <div className="h-full">
+              <div
+                className="group h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="audience-card-4"
+              >
+                <Building2 className="h-5 w-5 text-emerald-400" />
+                <h3 className="mt-5 font-heading text-lg font-medium tracking-tight text-white">
+                  For Agencies
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  Scale execution with AI.
+                </p>
+              </div>
+            </div>
+
+            {/* 6. Enterprises */}
+            <div className="h-full">
+              <div
+                className="group h-full rounded-3xl border border-white/5 bg-[#070e17] p-8 transition-[transform,border-color] duration-500 hover:-translate-y-1 hover:border-emerald-500/25"
+                data-testid="audience-card-5"
+              >
+                <Landmark className="h-5 w-5 text-emerald-400" />
+                <h3 className="mt-5 font-heading text-lg font-medium tracking-tight text-white">
+                  For Enterprises
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  Implement AI across workflows.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 10. METRICS SECTION                                                       */}
+      {/* ========================================================================= */}
+      <section
+        id="voice"
+        className="relative overflow-hidden border-t border-white/5 py-28 md:py-36"
+        data-testid="metrics-section"
+      >
+        <img
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-20 pointer-events-none"
+          loading="lazy"
+          src="https://images.pexels.com/photos/34169562/pexels-photo-34169562.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030712] via-[#030712]/75 to-[#030712] pointer-events-none" />
+
+        <div className="relative mx-auto max-w-7xl px-6 md:px-12">
+          <div>
+            <h2 className="max-w-2xl font-heading text-4xl font-light tracking-tight sm:text-5xl text-white">
+              Built for people who want to <span className="text-gradient-green">work smarter.</span>
+            </h2>
+          </div>
+
+          <div className="mt-16 grid grid-cols-2 gap-10 md:grid-cols-4">
+            <div data-testid="metric-0">
+              <span className="font-heading text-5xl font-light tracking-tight text-emerald-300 md:text-6xl">
+                200+
+              </span>
+              <p className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-slate-400">
+                AI tools curated
+              </p>
+            </div>
+
+            <div data-testid="metric-1">
+              <span className="font-heading text-5xl font-light tracking-tight text-emerald-300 md:text-6xl">
+                100+
+              </span>
+              <p className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-slate-400">
+                Marketing prompts
+              </p>
+            </div>
+
+            <div data-testid="metric-2">
+              <span className="font-heading text-5xl font-light tracking-tight text-emerald-300 md:text-6xl">
+                50+
+              </span>
+              <p className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-slate-400">
+                AI workflows
+              </p>
+            </div>
+
+            <div data-testid="metric-3">
+              <span className="font-heading text-5xl font-light tracking-tight text-emerald-300 md:text-6xl">
+                10+
+              </span>
+              <p className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-slate-400">
+                AI employees
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 11. NEWSLETTER SECTION                                                    */}
+      {/* ========================================================================= */}
+      <section className="py-24 md:py-32" data-testid="newsletter-section">
+        <div className="mx-auto max-w-7xl px-6 md:px-12">
+          <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-[#070e17] p-10 md:p-16">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,_rgba(16,185,129,0.12),_transparent_50%)]" />
+
+            <div className="relative max-w-2xl">
+              <h2 className="font-heading text-4xl font-light tracking-tight sm:text-5xl text-white">
+                Stay ahead of <span className="text-gradient-green">AI.</span>
               </h2>
-              
-              <p className="mt-4 sm:mt-5 text-sm sm:text-base text-blue-100/90 leading-relaxed max-w-xl font-normal">
-                Fill out the form, and a member of our team will get in touch with you to provide a solution tailored to your needs.
+              <p className="mt-5 text-base text-slate-400 sm:text-lg">
+                New tools. Better workflows. Practical AI. No noise.
               </p>
 
               <div className="mt-8">
-                <button
-                  type="button"
-                  onClick={() => setIsDemoModalOpen(true)}
-                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-white text-[#d62888] font-bold text-sm hover:bg-slate-50 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 border border-pink-100/80"
-                >
-                  Request a demo
-                </button>
+                {newsletterSubscribed ? (
+                  <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-sm flex items-center gap-2">
+                    <Check className="h-5 w-5 text-emerald-400 shrink-0" />
+                    <span>Thank you for subscribing! You are now connected to the Green AI briefings.</span>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={handleNewsletterSubmit}
+                    className="flex flex-col gap-3 sm:flex-row"
+                    data-testid="newsletter-form"
+                  >
+                    <input
+                      className="flex w-full rounded-md border px-4 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 h-13 flex-1 border-white/10 bg-white/5 py-4 placeholder:text-slate-500 text-white"
+                      required
+                      placeholder="Enter your email"
+                      data-testid="newsletter-email-input"
+                      type="email"
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
+                    />
+                    <button
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm shadow group h-13 bg-emerald-600 px-7 py-4 font-medium text-white transition-colors duration-300 hover:bg-emerald-500"
+                      type="submit"
+                      data-testid="newsletter-submit-button"
+                    >
+                      <span>Join the Green</span>
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
-
-            {/* Right Image: Person holding tablet */}
-            <div className="w-full lg:w-5/12 flex items-end justify-center lg:justify-end px-6 lg:px-0 pt-4 lg:pt-0">
-              <div className="relative w-72 sm:w-80 lg:w-[380px] h-[320px] sm:h-[360px] lg:h-[400px]">
-                <img
-                  src="/images/cta_woman_tablet.jpg"
-                  alt="Request a demo - AutoGreen team"
-                  className="w-full h-full object-cover object-top mix-blend-multiply drop-shadow-2xl pointer-events-none"
-                />
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
 
-      {/* Interactive Request a Demo Modal */}
-      {isDemoModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 shadow-2xl text-left">
-            <button
-              onClick={() => {
-                setIsDemoModalOpen(false);
-                setDemoSubmitted(false);
-              }}
-              className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
+      {/* ========================================================================= */}
+      {/* 12. FAQ SECTION                                                           */}
+      {/* ========================================================================= */}
+      <section
+        id="resources"
+        className="border-t border-white/5 py-24 md:py-32"
+        data-testid="faq-section"
+      >
+        <div className="mx-auto grid max-w-7xl gap-14 px-6 md:grid-cols-12 md:px-12">
+          <div className="md:col-span-4">
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+              Questions
+            </p>
+            <h2 className="mt-6 font-heading text-4xl font-light tracking-tight sm:text-5xl text-white">
+              Frequently asked
+            </h2>
+          </div>
 
-            {demoSubmitted ? (
-              <div className="py-8 text-center space-y-3">
-                <div className="inline-flex h-12 w-12 rounded-full bg-emerald-100 text-emerald-700 items-center justify-center mb-2">
-                  <CheckCircle className="h-6 w-6" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900">Demo Request Received!</h3>
-                <p className="text-xs sm:text-sm text-black max-w-sm mx-auto">
-                  Thank you, <strong className="text-slate-900">{demoForm.name || 'there'}</strong>! A solutions specialist will connect with you at <span className="text-emerald-700 font-mono font-semibold">{demoForm.email}</span> within 24 hours.
-                </p>
-                <button
-                  onClick={() => {
-                    setIsDemoModalOpen(false);
-                    setDemoSubmitted(false);
-                    setDemoForm({ name: '', email: '', message: '' });
-                  }}
-                  className="mt-4 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-sm"
-                >
-                  Close Window
-                </button>
-              </div>
-            ) : (
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#0082ff]">Get in touch</span>
-                <h3 className="text-2xl font-bold text-slate-900 mt-1">Request a Personalized Demo</h3>
-                <p className="text-xs text-black mt-1">
-                  Tell us a bit about your business goals and we will set up a guided walkthrough.
-                </p>
-
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setDemoSubmitted(true);
-                  }}
-                  className="mt-6 space-y-4 text-xs"
-                >
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-700">Your Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={demoForm.name}
-                      onChange={(e) => setDemoForm({ ...demoForm, name: e.target.value })}
-                      placeholder="Jane Doe"
-                      className="w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0082ff]"
-                    />
+          <div className="md:col-span-8">
+            <div className="w-full" data-testid="faq-accordion">
+              {faqData.map((item, idx) => {
+                const isOpen = openFaq === idx;
+                return (
+                  <div key={idx} className="border-b border-white/5">
+                    <h3>
+                      <button
+                        type="button"
+                        onClick={() => toggleFaq(idx)}
+                        className="flex flex-1 w-full items-center justify-between py-5 text-left font-heading text-lg font-normal tracking-tight text-white transition-colors duration-300 hover:text-emerald-300"
+                        data-testid={`faq-question-${idx}`}
+                      >
+                        <span>{item.q}</span>
+                        <ChevronDown
+                          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
+                            isOpen ? 'rotate-180 text-emerald-400' : ''
+                          }`}
+                        />
+                      </button>
+                    </h3>
+                    {isOpen && (
+                      <div
+                        className="overflow-hidden pb-5 text-sm leading-relaxed text-slate-400"
+                        data-testid={`faq-answer-${idx}`}
+                      >
+                        <p>{item.a}</p>
+                      </div>
+                    )}
                   </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-700">Work Email Address</label>
-                    <input
-                      type="email"
-                      required
-                      value={demoForm.email}
-                      onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })}
-                      placeholder="jane@company.com"
-                      className="w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0082ff]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-slate-700">What solutions are you interested in?</label>
-                    <textarea
-                      rows={3}
-                      value={demoForm.message}
-                      onChange={(e) => setDemoForm({ ...demoForm, message: e.target.value })}
-                      placeholder="AI Kits, Automations, custom agents..."
-                      className="w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0082ff]"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-[#0082ff] hover:bg-[#0070df] text-white font-bold text-xs shadow-md transition-all hover:scale-[1.01]"
-                  >
-                    Submit Demo Request
-                  </button>
-                </form>
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
         </div>
-      )}
+      </section>
 
-    </div>);
+      {/* ========================================================================= */}
+      {/* 13. FINAL CTA SECTION                                                     */}
+      {/* ========================================================================= */}
+      <section
+        id="studio"
+        className="relative overflow-hidden py-28 md:py-40"
+        data-testid="final-cta-section"
+      >
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(6,78,59,0.45),_transparent_65%)]" />
+
+        <div className="relative mx-auto max-w-5xl px-6 text-center md:px-12">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+            Grow with intelligence
+          </p>
+
+          <h2 className="mt-6 font-heading text-4xl font-light leading-[1.05] tracking-tight sm:text-5xl md:text-6xl text-white">
+            Every business can grow with the{' '}
+            <span className="text-gradient-green">right intelligence.</span>
+          </h2>
+
+          <p className="mx-auto mt-6 max-w-xl text-base text-slate-400 sm:text-lg">
+            Discover the tools. Build the systems. Grow with AI.
+          </p>
+
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link href="/#discover" data-discover="true">
+              <button
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm shadow group h-13 rounded-full bg-emerald-600 px-8 py-4 font-medium text-white transition-all duration-300 hover:bg-emerald-500 hover:scale-[1.02]"
+                data-testid="final-cta-explore-button"
+              >
+                <span>Explore AutoGreen AI</span>
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
+            </Link>
+
+            <Link href="/#kits" data-discover="true">
+              <button
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm border shadow-sm h-13 rounded-full border-white/15 px-8 py-4 font-medium text-slate-200 transition-all duration-300 hover:border-emerald-500/50 hover:text-emerald-300 hover:bg-white/5"
+                data-testid="final-cta-kit-button"
+              >
+                <span>Start with the AI Marketer Kit</span>
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  );
 }

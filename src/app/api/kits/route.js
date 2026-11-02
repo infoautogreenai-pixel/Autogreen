@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import Guide from '@/models/Guide';
+import { ensureAiMarketerKits } from '@/lib/kits-init';
 
 // =============================================
 // AI MARKETER KITS API ROUTE — GET /api/kits
 // =============================================
-// Returns the 3 dynamic AI Marketer Kit tiers for the homepage
-// and anywhere pricing is rendered.
+// Returns the 3 dynamic AI Marketer Kit tiers for the homepage,
+// checkout, and pricing displays, fully synchronized with MongoDB.
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,9 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    // Query the 3 kits by category or IDs
+    // Ensure all 3 kits exist in MongoDB with initial PDFs
+    await ensureAiMarketerKits();
+
     const kitIds = [
       '6adc8def486c185f0a88bdd2',
       '6adc8def486c185f0a88bdd5',
@@ -25,8 +28,8 @@ export async function GET() {
       $or: [
         { _id: { $in: kitIds } },
         { category: 'AI Marketing Toolkits' },
-        { slug: { $in: ['ai-marketer-starter-kit', 'ai-marketer-pro-kit', 'ai-marketer-community-kit', 'ai-marketer-expert-stack'] } }
-      ]
+        { slug: { $in: ['ai-marketer-starter-kit', 'ai-marketer-pro-kit', 'ai-marketer-expert-stack'] } },
+      ],
     })
       .select('-pdfFiles.fileKey')
       .sort({ orderIndex: 1, price: 1 })
@@ -34,8 +37,13 @@ export async function GET() {
 
     // Format for the UI
     const tiers = guides.map((g) => {
-      const isExpert = g.title.toLowerCase().includes('expert') || g.popular || g.slug.includes('expert');
-      const isPro = g.title.toLowerCase().includes('pro') || g.title.toLowerCase().includes('community') || g.slug.includes('pro');
+      const isExpert =
+        g.title.toLowerCase().includes('expert') ||
+        g.popular ||
+        g.slug.includes('expert');
+      const isPro =
+        g.title.toLowerCase().includes('pro') ||
+        g.slug.includes('pro');
 
       return {
         id: g._id.toString(),
@@ -47,32 +55,48 @@ export async function GET() {
         dotColor: g.dotColor || (isExpert ? 'rose' : isPro ? 'amber' : 'emerald'),
         price: `₹${Number(g.price).toLocaleString('en-IN')}`,
         numericPrice: Number(g.price),
-        originalPrice: g.originalPrice ? `₹${Number(g.originalPrice).toLocaleString('en-IN')}` : null,
+        originalPrice: g.originalPrice
+          ? `₹${Number(g.originalPrice).toLocaleString('en-IN')}`
+          : null,
         description: g.description,
-        features: g.highlights && g.highlights.length > 0 ? g.highlights : [
-          '200+ AI tools',
-          '100+ prompts',
-          'Claude Skills',
-          'Beginner workflows',
-          'Claude walkthroughs',
-          'Notion Starter System',
-          'n8n introduction',
-          'AI Marketer Community'
-        ],
-        cta: g.ctaText || (isExpert ? 'Become an AI Operator →' : isPro ? 'Go Pro →' : 'Start with Starter →'),
+        features:
+          g.highlights && g.highlights.length > 0
+            ? g.highlights
+            : [
+                '200+ AI tools',
+                '100+ prompts',
+                'Claude Skills',
+                'Beginner workflows',
+                'Claude walkthroughs',
+                'Notion Starter System',
+                'n8n introduction',
+                'AI Marketer Community',
+              ],
+        cta:
+          g.ctaText ||
+          (isExpert
+            ? 'Become an AI Operator →'
+            : isPro
+            ? 'Go Pro →'
+            : 'Start with Starter →'),
         popular: Boolean(g.popular || isExpert),
+        hasPdf: Boolean(g.pdfFiles && g.pdfFiles.length > 0),
+        pdfCount: g.pdfFiles ? g.pdfFiles.length : 0,
       };
     });
 
-    return NextResponse.json({
-      success: true,
-      count: tiers.length,
-      tiers,
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, max-age=0',
+    return NextResponse.json(
+      {
+        success: true,
+        count: tiers.length,
+        tiers,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+        },
       }
-    });
+    );
   } catch (error) {
     console.error('Fetch kits error:', error);
     return NextResponse.json(

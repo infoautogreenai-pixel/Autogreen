@@ -14,7 +14,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -23,7 +23,8 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-[#FFFFFF] text-slate-900 antialiased selection:bg-emerald-500 selection:text-white">
+      <body className="min-h-screen flex flex-col bg-[#030712] text-white antialiased selection:bg-emerald-500 selection:text-white">
+        <div className="noise-overlay" aria-hidden="true" />
         <AuthProvider>
           <Navbar />
           <main className="flex-1 w-full">
@@ -32,5 +33,6 @@ export default function RootLayout({ children }) {
           <Footer />
         </AuthProvider>
       </body>
-    </html>);
+    </html>
+  );
 }

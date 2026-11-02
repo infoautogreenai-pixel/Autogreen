@@ -45,7 +45,7 @@ function CheckoutContent() {
   const [couponLoading, setCouponLoading] = useState(false);
 
   const [usePoints, setUsePoints] = useState(false);
-  const [selectedGateway, setSelectedGateway] = useState('test');
+  const [selectedGateway, setSelectedGateway] = useState('razorpay');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(null);
   const [checkoutError, setCheckoutError] = useState(null);
@@ -67,27 +67,72 @@ function CheckoutContent() {
         if (guideIdParam) {
           selected = guides.find(
             (g) =>
-              g.id === guideIdParam ||
-              g._id === guideIdParam ||
+              (g.id && g.id.toString() === guideIdParam.toString()) ||
+              (g._id && g._id.toString() === guideIdParam.toString()) ||
               g.slug === guideIdParam
           );
         }
 
-        // 2. Try matching by tier name or slug
+        // 2. Try matching by tierParam (e.g. starter, 99, pro, 599, expert, 1299)
         if (!selected && tierParam) {
-          const normalizedTier = tierParam.toLowerCase();
-          selected = guides.find(
-            (g) =>
-              g.title.toLowerCase().includes(normalizedTier) ||
-              normalizedTier.includes(g.title.toLowerCase()) ||
-              g.slug.toLowerCase().includes(normalizedTier)
-          );
+          const norm = tierParam.toLowerCase().trim();
+          selected =
+            guides.find(
+              (g) =>
+                (norm === 'starter' || norm === '99') &&
+                (g.slug === 'ai-marketer-starter-kit' ||
+                  Number(g.price) === 99 ||
+                  g.title.toLowerCase().includes('starter'))
+            ) ||
+            guides.find(
+              (g) =>
+                (norm === 'pro' || norm === '599') &&
+                (g.slug === 'ai-marketer-pro-kit' ||
+                  Number(g.price) === 599 ||
+                  g.title.toLowerCase().includes('pro'))
+            ) ||
+            guides.find(
+              (g) =>
+                (norm === 'expert' || norm === '1299') &&
+                (g.slug === 'ai-marketer-expert-stack' ||
+                  Number(g.price) === 1299 ||
+                  g.title.toLowerCase().includes('expert'))
+            ) ||
+            guides.find(
+              (g) =>
+                g.title.toLowerCase().includes(norm) ||
+                g.slug.toLowerCase().includes(norm) ||
+                String(g.price) === norm
+            );
         }
 
-        // 3. Fallback to AI Marketer Pro (or community or first guide)
+        // 3. Try priceParam (e.g. price=99 or price=599 or price=1299)
+        if (!selected && priceParam) {
+          const numPrice = Number(priceParam);
+          selected = guides.find((g) => Number(g.price) === numPrice);
+        }
+
+        // 4. Default Fallback: ALWAYS default to AI Marketer Starter (â‚¹99) first!
         if (!selected) {
           selected =
-            guides.find((g) => g.slug === 'ai-marketer-pro-kit' || g.slug === 'ai-marketer-community-kit') ||
+            guides.find(
+              (g) =>
+                g.slug === 'ai-marketer-starter-kit' ||
+                Number(g.price) === 99 ||
+                g.title.toLowerCase().includes('starter')
+            ) ||
+            guides.find(
+              (g) =>
+                g.slug === 'ai-marketer-pro-kit' ||
+                Number(g.price) === 599 ||
+                g.title.toLowerCase().includes('pro')
+            ) ||
+            guides.find(
+              (g) =>
+                g.slug === 'ai-marketer-expert-stack' ||
+                Number(g.price) === 1299 ||
+                g.title.toLowerCase().includes('expert')
+            ) ||
             guides[0];
         }
 
@@ -100,7 +145,7 @@ function CheckoutContent() {
     }
 
     fetchCheckoutData();
-  }, [guideIdParam, tierParam]);
+  }, [guideIdParam, tierParam, priceParam]);
 
   // Check if user already owns this guide
   const isAlreadyOwned =
@@ -152,7 +197,7 @@ function CheckoutContent() {
   const couponDiscount = appliedCoupon ? appliedCoupon.calculatedDiscount : 0;
   const priceAfterCoupon = Math.max(0, basePrice - couponDiscount);
 
-  // Points redemption (100 pts = ₹50 or $50 equiv)
+  // Points redemption (100 pts = â‚¹50 or $50 equiv)
   const userPoints = user?.points || 0;
   const pointsRedeemRate = 0.5; // each point = 0.5 unit discount
   const maxPointsToRedeem = Math.min(
@@ -181,6 +226,12 @@ function CheckoutContent() {
       return;
     }
 
+    // Admin protection: admins should not create customer leads or orders
+    if (user?.role === 'admin') {
+      setCheckoutError('Administrator accounts have master access to all materials and do not create customer purchase leads.');
+      return;
+    }
+
     setIsProcessing(true);
     setCheckoutError(null);
 
@@ -202,7 +253,97 @@ function CheckoutContent() {
         throw new Error(orderData.error || 'Failed to initialize order');
       }
 
-      // 2. Verify payment (instant activation)
+      // Helper to dynamically load Razorpay Checkout script
+      const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+          if (typeof window !== 'undefined' && window.Razorpay) {
+            resolve(true);
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      };
+
+      // 2. If Razorpay is selected and live order generated, open Razorpay Modal
+      if (
+        selectedGateway === 'razorpay' &&
+        orderData.order.razorpayOrderId &&
+        orderData.order.razorpayKeyId
+      ) {
+        const loaded = await loadRazorpayScript();
+        if (!loaded) {
+          throw new Error('Unable to load Razorpay Checkout. Please check your internet connection.');
+        }
+
+        const options = {
+          key: orderData.order.razorpayKeyId,
+          amount: orderData.order.amount * 100,
+          currency: 'INR',
+          name: 'AutoGreen AI',
+          description: guide.title,
+          image: guide.coverImage || 'https://autogreenai.com/favicon.ico',
+          order_id: orderData.order.razorpayOrderId,
+          prefill: {
+            name: user.name || '',
+            email: user.email || '',
+          },
+          theme: {
+            color: '#059669', // Emerald brand
+          },
+          handler: async function (response) {
+            setIsProcessing(true);
+            try {
+              const verifyRes = await fetch('/api/orders/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderId: orderData.order.id,
+                  paymentId: response.razorpay_payment_id,
+                  signature: response.razorpay_signature,
+                  gateway: 'razorpay',
+                }),
+              });
+
+              const verifyData = await verifyRes.json();
+              if (!verifyData.success) {
+                throw new Error(verifyData.error || 'Payment confirmation failed');
+              }
+
+              confetti({
+                particleCount: 130,
+                spread: 90,
+                origin: { y: 0.6 },
+              });
+
+              setPaymentSuccess(verifyData.order);
+              await refreshUser();
+            } catch (err) {
+              setCheckoutError(err.message || 'Payment execution failed');
+            } finally {
+              setIsProcessing(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setIsProcessing(false);
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (resp) {
+          setCheckoutError(resp?.error?.description || 'Payment was declined or failed.');
+          setIsProcessing(false);
+        });
+        rzp.open();
+        return;
+      }
+
+      // 3. Fallback / Test Sandbox Instant Activation
       const verifyRes = await fetch('/api/orders/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -283,7 +424,7 @@ function CheckoutContent() {
             <div className="flex justify-between text-slate-400">
               <span>Amount Paid</span>
               <span className="font-bold text-emerald-400 font-mono text-sm">
-                ₹{paymentSuccess.amount}
+                â‚¹{paymentSuccess.amount}
               </span>
             </div>
             {paymentSuccess.pointsEarned > 0 && (
@@ -311,7 +452,7 @@ function CheckoutContent() {
               <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
                 View My Library
               </Link>
-              <span className="text-slate-700">•</span>
+              <span className="text-slate-700">â€¢</span>
               <Link href="/dashboard/orders" className="text-slate-400 hover:text-white transition-colors">
                 View Invoices & Orders
               </Link>
@@ -440,48 +581,13 @@ function CheckoutContent() {
                     href={`/dashboard/reader/${guide._id || guide.id}`}
                     className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs"
                   >
-                    Open Reader →
+                    Open Reader â†’
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* Quick Switch Kit Tiers Selector */}
-            <div className="rounded-3xl bg-slate-900/60 border border-slate-800 p-6 space-y-4">
-              <p className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">
-                Available AI Kits & Tiers:
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {allKits.slice(0, 3).map((item) => {
-                  const isCurrent =
-                    (item._id || item.id)?.toString() ===
-                    (guide?._id || guide?.id)?.toString();
-                  return (
-                    <button
-                      key={item._id || item.id}
-                      type="button"
-                      onClick={() => setGuide(item)}
-                      className={`p-3.5 rounded-2xl border text-left transition-all ${
-                        isCurrent
-                          ? 'bg-emerald-950/60 border-emerald-500 shadow-md shadow-emerald-500/20'
-                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-mono uppercase text-slate-400">
-                          {item.price ? `₹${item.price}` : 'Featured'}
-                        </span>
-                        {isCurrent && (
-                          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                        )}
-                      </div>
-                      <p className="text-xs font-bold text-white truncate">{item.title}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            
           </div>
 
           {/* ======================================================== */}
@@ -498,12 +604,12 @@ function CheckoutContent() {
               <div className="space-y-3 text-xs border-b border-slate-800 pb-5">
                 <div className="flex justify-between text-slate-400">
                   <span>Regular Price</span>
-                  <span className="line-through">₹{guide?.originalPrice || (guide?.price ? guide.price * 2 : 299)}</span>
+                  <span className="line-through">â‚¹{guide?.originalPrice || (guide?.price ? guide.price * 2 : 299)}</span>
                 </div>
 
                 <div className="flex justify-between text-slate-300">
                   <span>Base Price</span>
-                  <span className="font-mono text-white font-bold">₹{basePrice}</span>
+                  <span className="font-mono text-white font-bold">â‚¹{basePrice}</span>
                 </div>
 
                 {appliedCoupon && (
@@ -512,7 +618,7 @@ function CheckoutContent() {
                       <Tag className="h-3.5 w-3.5" />
                       <span>Promo ({appliedCoupon.code})</span>
                     </span>
-                    <span className="font-mono">-₹{couponDiscount}</span>
+                    <span className="font-mono">-â‚¹{couponDiscount}</span>
                   </div>
                 )}
 
@@ -522,7 +628,7 @@ function CheckoutContent() {
                       <Coins className="h-3.5 w-3.5" />
                       <span>Points Discount ({maxPointsToRedeem} pts)</span>
                     </span>
-                    <span className="font-mono">-₹{pointsDiscount}</span>
+                    <span className="font-mono">-â‚¹{pointsDiscount}</span>
                   </div>
                 )}
 
@@ -530,7 +636,7 @@ function CheckoutContent() {
                   <span className="text-sm font-bold text-white">Final Payable</span>
                   <div className="text-right">
                     <span className="text-3xl font-black text-emerald-400 font-mono">
-                      ₹{finalPayable}
+                      â‚¹{finalPayable}
                     </span>
                     <span className="text-[10px] text-slate-400 block">one-time payment</span>
                   </div>
@@ -547,7 +653,7 @@ function CheckoutContent() {
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-800/80 text-xs">
                     <div className="flex items-center gap-1.5 text-emerald-400 font-bold font-mono">
                       <CheckCircle2 className="h-4 w-4" />
-                      <span>{appliedCoupon.code} applied (-₹{couponDiscount})</span>
+                      <span>{appliedCoupon.code} applied (-â‚¹{couponDiscount})</span>
                     </div>
                     <button
                       type="button"
@@ -616,41 +722,51 @@ function CheckoutContent() {
                 <div className="space-y-2">
                   <button
                     type="button"
-                    onClick={() => setSelectedGateway('test')}
-                    className={`w-full p-3 rounded-xl border text-left flex items-center justify-between text-xs transition-all ${
-                      selectedGateway === 'test'
-                        ? 'bg-emerald-950/40 border-emerald-500 text-white font-bold'
-                        : 'bg-slate-950 border-slate-800 text-slate-300'
+                    onClick={() => setSelectedGateway('razorpay')}
+                    className={`w-full p-3.5 rounded-xl border text-left flex items-center justify-between text-xs transition-all ${
+                      selectedGateway === 'razorpay'
+                        ? 'bg-emerald-950/40 border-emerald-500 text-white font-bold ring-1 ring-emerald-500/30'
+                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Zap className="h-4 w-4 text-emerald-400" />
+                      <CreditCard className="h-4 w-4 text-emerald-400" />
                       <div>
-                        <span>⚡ Instant Test Mode (1-Click Activation)</span>
-                        <span className="block text-[10px] text-slate-400 font-normal">
-                          Instant access for testing without entering credit card
+                        <span className="font-bold text-white flex items-center gap-2">
+                          <span>UPI, Cards & Netbanking (Razorpay)</span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-300 font-mono font-bold uppercase tracking-wider">
+                            Active
+                          </span>
+                        </span>
+                        <span className="block text-[10px] text-slate-400 font-normal mt-0.5">
+                          Google Pay, PhonePe, Paytm, QR Code, Cards & Netbanking
                         </span>
                       </div>
                     </div>
-                    {selectedGateway === 'test' && (
+                    {selectedGateway === 'razorpay' && (
                       <Check className="h-4 w-4 text-emerald-400" />
                     )}
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setSelectedGateway('razorpay')}
+                    onClick={() => setSelectedGateway('test')}
                     className={`w-full p-3 rounded-xl border text-left flex items-center justify-between text-xs transition-all ${
-                      selectedGateway === 'razorpay'
-                        ? 'bg-emerald-950/40 border-emerald-500 text-white font-bold'
-                        : 'bg-slate-950 border-slate-800 text-slate-300'
+                      selectedGateway === 'test'
+                        ? 'bg-emerald-950/40 border-emerald-500 text-white font-bold ring-1 ring-emerald-500/30'
+                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <CreditCard className="h-4 w-4 text-blue-400" />
-                      <span>Cards & UPI / Razorpay Gateway</span>
+                      <Zap className="h-4 w-4 text-amber-400" />
+                      <div>
+                        <span>⚡ Sandbox Demo Mode (1-Click Test)</span>
+                        <span className="block text-[10px] text-slate-400 font-normal">
+                          Instant access for testing without entering test cards
+                        </span>
+                      </div>
                     </div>
-                    {selectedGateway === 'razorpay' && (
+                    {selectedGateway === 'test' && (
                       <Check className="h-4 w-4 text-emerald-400" />
                     )}
                   </button>
@@ -666,7 +782,26 @@ function CheckoutContent() {
               )}
 
               {/* MAIN CTA BUTTON */}
-              {user ? (
+              {user?.role === 'admin' ? (
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-xs text-emerald-200 space-y-1">
+                    <div className="flex items-center gap-2 font-bold text-emerald-400">
+                      <ShieldCheck className="h-4 w-4" />
+                      <span>Administrator Account Detected</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300">
+                      You are logged in with administrator privileges. Admins have direct access to all guides without placing orders or generating leads.
+                    </p>
+                  </div>
+                  <Link
+                    href={`/dashboard/reader/${guide?._id || guide?.id || guide?.slug}`}
+                    className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    <span>Open in DRM Reader (Full Admin Access)</span>
+                  </Link>
+                </div>
+              ) : user ? (
                 <button
                   type="button"
                   disabled={isProcessing}
@@ -697,7 +832,7 @@ function CheckoutContent() {
                       guide?.title || ''
                     )}`
                   )}`}
-                  className="w-full py-4 px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-sm shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
                 >
                   <UserIcon className="h-4 w-4" />
                   <span>Log In to Complete Purchase (₹{finalPayable})</span>
@@ -706,7 +841,7 @@ function CheckoutContent() {
 
               <p className="text-[11px] text-center text-slate-500 flex items-center justify-center gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <span>256-Bit SSL Encrypted • Lifetime Cloud Access</span>
+                <span>256-Bit SSL Encrypted â€¢ Lifetime Cloud Access</span>
               </p>
             </div>
           </div>

@@ -36,6 +36,9 @@ export function AuthProvider({ children }) {
             if (!res.ok || !data.success) {
                 return { success: false, error: data.error || 'Login failed' };
             }
+            if (data.user) {
+                setUser(data.user);
+            }
             await refreshUser();
             return { success: true, user: data.user };
         }
