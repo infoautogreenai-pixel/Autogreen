@@ -124,11 +124,11 @@ export async function POST(req) {
       const availableUserPoints = user.points || 0;
       pointsToRedeem = Math.min(redeemPoints, availableUserPoints);
 
-      // Calculate how much â‚¹ discount the points give
+      // Calculate how much ₹ discount the points give
       const potentialCashDiscount = pointsToRedeem * (settings.pointsRedeemRate || 0.5);
       pointsDiscount = Math.min(potentialCashDiscount, remainingAfterCoupon);
 
-      // Adjust actual points needed (if order is already â‚¹0)
+      // Adjust actual points needed (if order is already ₹0)
       pointsToRedeem = Math.ceil(pointsDiscount / (settings.pointsRedeemRate || 0.5));
     }
 

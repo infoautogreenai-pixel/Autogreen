@@ -376,29 +376,23 @@ export default function AdminGuidesPage() {
   };
 
   // Identify the 3 Core Selling Tiers
-  const starterGuide = guides.find(
-    (g) =>
-      g._id === '6adc8def486c185f0a88bdd2' ||
-      g.slug === 'ai-marketer-starter-kit' ||
-      Number(g.price) === 99 ||
-      g.title.toLowerCase().includes('starter')
-  );
+  const starterGuide =
+    guides.find((g) => g.slug === 'ai-marketer-starter-kit') ||
+    guides.find((g) => g._id?.toString() === '6adc8def486c185f0a88bdd2') ||
+    guides.find((g) => g.title.toLowerCase().includes('starter')) ||
+    guides.find((g) => Number(g.price) === 99);
 
-  const proGuide = guides.find(
-    (g) =>
-      g._id === '6adc8def486c185f0a88bdd5' ||
-      g.slug === 'ai-marketer-pro-kit' ||
-      Number(g.price) === 599 ||
-      g.title.toLowerCase().includes('pro')
-  );
+  const proGuide =
+    guides.find((g) => g.slug === 'ai-marketer-pro-kit') ||
+    guides.find((g) => g._id?.toString() === '6adc8def486c185f0a88bdd5') ||
+    guides.find((g) => g.title.toLowerCase().includes('pro') && !g.title.toLowerCase().includes('micro')) ||
+    guides.find((g) => Number(g.price) === 599);
 
-  const expertGuide = guides.find(
-    (g) =>
-      g._id === '6adc8def486c185f0a88bdd8' ||
-      g.slug === 'ai-marketer-expert-stack' ||
-      Number(g.price) === 1299 ||
-      g.title.toLowerCase().includes('expert')
-  );
+  const expertGuide =
+    guides.find((g) => g.slug === 'ai-marketer-expert-stack') ||
+    guides.find((g) => g._id?.toString() === '6adc8def486c185f0a88bdd8') ||
+    guides.find((g) => g.title.toLowerCase().includes('expert')) ||
+    guides.find((g) => Number(g.price) === 1299);
 
   const filteredGuides = guides.filter(
     (g) =>

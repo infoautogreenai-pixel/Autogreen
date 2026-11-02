@@ -112,7 +112,7 @@ function CheckoutContent() {
           selected = guides.find((g) => Number(g.price) === numPrice);
         }
 
-        // 4. Default Fallback: ALWAYS default to AI Marketer Starter (â‚¹99) first!
+        // 4. Default Fallback: ALWAYS default to AI Marketer Starter (₹99) first!
         if (!selected) {
           selected =
             guides.find(
@@ -197,7 +197,7 @@ function CheckoutContent() {
   const couponDiscount = appliedCoupon ? appliedCoupon.calculatedDiscount : 0;
   const priceAfterCoupon = Math.max(0, basePrice - couponDiscount);
 
-  // Points redemption (100 pts = â‚¹50 or $50 equiv)
+  // Points redemption (100 pts = ₹50 or $50 equiv)
   const userPoints = user?.points || 0;
   const pointsRedeemRate = 0.5; // each point = 0.5 unit discount
   const maxPointsToRedeem = Math.min(
@@ -424,7 +424,7 @@ function CheckoutContent() {
             <div className="flex justify-between text-slate-400">
               <span>Amount Paid</span>
               <span className="font-bold text-emerald-400 font-mono text-sm">
-                â‚¹{paymentSuccess.amount}
+                ₹{paymentSuccess.amount}
               </span>
             </div>
             {paymentSuccess.pointsEarned > 0 && (
@@ -452,7 +452,7 @@ function CheckoutContent() {
               <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
                 View My Library
               </Link>
-              <span className="text-slate-700">â€¢</span>
+              <span className="text-slate-700">•</span>
               <Link href="/dashboard/orders" className="text-slate-400 hover:text-white transition-colors">
                 View Invoices & Orders
               </Link>
@@ -604,12 +604,16 @@ function CheckoutContent() {
               <div className="space-y-3 text-xs border-b border-slate-800 pb-5">
                 <div className="flex justify-between text-slate-400">
                   <span>Regular Price</span>
-                  <span className="line-through">â‚¹{guide?.originalPrice || (guide?.price ? guide.price * 2 : 299)}</span>
+                  <span className="line-through">
+                    ₹{(guide?.originalPrice || (guide?.price ? guide.price * 2 : 299))?.toLocaleString('en-IN')}
+                  </span>
                 </div>
 
                 <div className="flex justify-between text-slate-300">
                   <span>Base Price</span>
-                  <span className="font-mono text-white font-bold">â‚¹{basePrice}</span>
+                  <span className="font-mono text-white font-bold">
+                    ₹{basePrice?.toLocaleString('en-IN')}
+                  </span>
                 </div>
 
                 {appliedCoupon && (
@@ -618,7 +622,7 @@ function CheckoutContent() {
                       <Tag className="h-3.5 w-3.5" />
                       <span>Promo ({appliedCoupon.code})</span>
                     </span>
-                    <span className="font-mono">-â‚¹{couponDiscount}</span>
+                    <span className="font-mono">-₹{couponDiscount?.toLocaleString('en-IN')}</span>
                   </div>
                 )}
 
@@ -628,15 +632,15 @@ function CheckoutContent() {
                       <Coins className="h-3.5 w-3.5" />
                       <span>Points Discount ({maxPointsToRedeem} pts)</span>
                     </span>
-                    <span className="font-mono">-â‚¹{pointsDiscount}</span>
+                    <span className="font-mono">-₹{pointsDiscount?.toLocaleString('en-IN')}</span>
                   </div>
                 )}
 
                 <div className="pt-3 border-t border-slate-800 flex justify-between items-baseline">
                   <span className="text-sm font-bold text-white">Final Payable</span>
                   <div className="text-right">
-                    <span className="text-3xl font-black text-emerald-400 font-mono">
-                      â‚¹{finalPayable}
+                    <span className="text-3xl font-black text-emerald-400 font-mono tracking-tight">
+                      ₹{finalPayable?.toLocaleString('en-IN')}
                     </span>
                     <span className="text-[10px] text-slate-400 block">one-time payment</span>
                   </div>
@@ -653,7 +657,7 @@ function CheckoutContent() {
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-800/80 text-xs">
                     <div className="flex items-center gap-1.5 text-emerald-400 font-bold font-mono">
                       <CheckCircle2 className="h-4 w-4" />
-                      <span>{appliedCoupon.code} applied (-â‚¹{couponDiscount})</span>
+                      <span>{appliedCoupon.code} applied (-₹{couponDiscount})</span>
                     </div>
                     <button
                       type="button"
@@ -820,7 +824,7 @@ function CheckoutContent() {
                     </>
                   ) : (
                     <>
-                      <span>Complete Purchase & Access Kit (₹{finalPayable})</span>
+                      <span>Complete Purchase & Access Kit (₹{finalPayable?.toLocaleString('en-IN') || finalPayable})</span>
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
@@ -835,13 +839,13 @@ function CheckoutContent() {
                   className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
                 >
                   <UserIcon className="h-4 w-4" />
-                  <span>Log In to Complete Purchase (₹{finalPayable})</span>
+                  <span>Log In to Complete Purchase (₹{finalPayable?.toLocaleString('en-IN') || finalPayable})</span>
                 </Link>
               )}
 
               <p className="text-[11px] text-center text-slate-500 flex items-center justify-center gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <span>256-Bit SSL Encrypted â€¢ Lifetime Cloud Access</span>
+                <span>256-Bit SSL Encrypted • Lifetime Cloud Access</span>
               </p>
             </div>
           </div>
